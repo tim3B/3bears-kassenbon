@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3Bears Kassenbon-Prüftool</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
+.header { background: #1a3a2a; color: white; padding: 1.25rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 1.1rem; font-weight: 500; }
+.header .user { font-size: 0.8rem; opacity: 0.85; display: flex; align-items: center; gap: 0.75rem; }
+.header .user button { background: rgba(255,255,255,0.15); color: white; border: none; border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; }
+.tabs { display: flex; border-bottom: 2px solid #e0e0d8; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.tab { padding: 0.65rem 1.25rem; font-size: 0.9rem; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; color: #888; background: none; border-top: none; border-left: none; border-right: none; font-weight: 500; }
+.tab.active { color: #1a3a2a; border-bottom-color: #1a3a2a; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.container { width: 100%; padding: 2rem; }
+.card { background: white; border-radius: 12px; border: 0.5px solid #e0e0d8; padding: 1.5rem; margin-bottom: 1.5rem; }
+.card h2 { font-size: 0.95rem; font-weight: 500; color: #444; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.upload-zone { border: 1.5px dashed #ccc; border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: block; }
+.upload-zone:hover { border-color: #1a3a2a; background: #f0f7f3; }
+.upload-zone.done { border-color: #2d7a4f; background: #f0faf5; }
+.upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.upload-zone p { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
+.upload-zone strong { font-size: 0.95rem; color: #333; }
+.upload-zone input { display: none; }
+.drop-zone { border: 1.5px dashed #ccc; border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; }
+.drop-zone:hover, .drop-zone.dragover { border-color: #1a3a2a; background: #f0f7f3; }
+.drop-zone input { display: none; }
+.file-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.chip { background: #f0f7f3; border: 1px solid #b8ddc8; border-radius: 20px; padding: 0.25rem 0.75rem; font-size: 0.8rem; color: #1a3a2a; display: flex; align-items: center; gap: 0.4rem; }
+.chip button { background: none; border: none; cursor: pointer; color: #888; font-size: 0.9rem; line-height: 1; padding: 0; }
+.btn { background: #1a3a2a; color: white; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-size: 0.9rem; cursor: pointer; font-weight: 500; transition: background 0.2s; }
+.btn:hover { background: #2d5a3d; }
+.btn:disabled { background: #ccc; cursor: not-allowed; }
+.btn-secondary { background: white; color: #1a3a2a; border: 1px solid #1a3a2a; }
+.btn-secondary:hover { background: #f0f7f3; }
+.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+.stat { background: white; border-radius: 8px; border: 0.5px solid #e0e0d8; padding: 1rem; text-align: center; }
+.stat-num { font-size: 1.75rem; font-weight: 500; color: #1a3a2a; }
+.stat-label { font-size: 0.75rem; color: #888; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
+th { background: #f5f5f0; padding: 0.6rem 0.75rem; text-align: left; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #666; border-bottom: 1px solid #e0e0d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+td { padding: 0.6rem 0.75rem; border-bottom: 0.5px solid #f0f0ea; vertical-align: middle; word-break: break-word; overflow-wrap: break-word; }
+.results-table td:nth-child(1), .results-table td:nth-child(6) { white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+.badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+.badge-green { background: #e8f5ee; color: #1a6b3a; }
+.badge-blue { background: #e8f0fe; color: #1a56a3; }
+.badge-red { background: #fce8e8; color: #a32d2d; }
+.badge-amber { background: #fdf3e0; color: #8a5c00; }
+.badge-grey { background: #f0f0f0; color: #666; }
+.progress-bar { background: #e0e0d8; border-radius: 4px; height: 6px; margin-top: 0.5rem; }
+.progress-fill { background: #1a3a2a; border-radius: 4px; height: 6px; transition: width 0.3s; }
+.log-area { font-size: 0.8rem; color: #555; max-height: 120px; overflow-y: auto; padding: 0.75rem; background: #f5f5f0; border-radius: 6px; line-height: 1.6; }
+.actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+.fingerprint { font-family: monospace; font-size: 0.75rem; color: #888; word-break: break-all; }
+.img-row { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 0.5px solid #f0f0ea; }
+.img-thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 1px solid #e0e0d8; }
+.img-fields { display: flex; gap: 0.5rem; flex: 1; flex-wrap: wrap; }
+.img-fields input { border: 1px solid #e0e0d8; border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.85rem; flex: 1; min-width: 120px; font-family: inherit; }
+.merge-summary { font-size: 0.85rem; color: #555; margin-top: 1rem; padding: 0.75rem; background: #f5f5f0; border-radius: 6px; line-height: 1.8; }
+.flag-email { color: #8a5c00; font-weight: 500; }
+.error-text { font-size: 0.8rem; color: #a32d2d; }
+.btn-stop { background: #a32d2d; color: white; border: none; border-radius: 8px; padding: 0.75rem 1.5rem; font-size: 0.9rem; cursor: pointer; font-weight: 500; }
+.field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.75rem; }
+.field label { font-size: 0.8rem; color: #666; }
+.field input, .field select { border: 1px solid #e0e0d8; border-radius: 6px; padding: 0.5rem 0.7rem; font-size: 0.85rem; font-family: inherit; }
+/* Login gate */
+#gate { position: fixed; inset: 0; background: #1a3a2a; display: flex; align-items: center; justify-content: center; z-index: 1000; }
+#gate .box { background: white; border-radius: 14px; padding: 2.5rem; text-align: center; max-width: 380px; width: 90%; }
+#gate h1 { font-size: 1.2rem; color: #1a3a2a; margin-bottom: 0.5rem; }
+#gate p { font-size: 0.9rem; color: #666; margin-bottom: 1.5rem; }
+#gate button { width: 100%; }
+#gate .err { color: #a32d2d; font-size: 0.85rem; margin-top: 1rem; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Login gate (Entra / Microsoft) -->
+<div id="gate">
+  <div class="box">
+    <div class="upload-icon">🧾</div>
+    <h1>3Bears Kassenbon-Prüftool</h1>
+    <p>Bitte mit deinem 3Bears Microsoft-Konto anmelden.</p>
+    <button class="btn" onclick="signIn()">Mit Microsoft anmelden</button>
+    <div class="err" id="gateErr"></div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+<div class="header">
+  <h1>3Bears Kassenbon-Prüftool</h1>
+  <div class="user"><span id="userEmail"></span><button onclick="signOut()">Abmelden</button></div>
+</div>
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('verify',this)">Tally-Prüfung</button>
+    <button class="tab" onclick="switchTab('email',this)">E-Mail Import</button>
+    <button class="tab" onclick="switchTab('excel',this)">Excel Import</button>
+    <button class="tab" onclick="switchTab('merge',this)">Zusammenführen</button>
+    <button class="tab hidden" id="adminTab" onclick="switchTab('admin',this)">Stammdaten &amp; Training</button>
+  </div>
+
+  <div id="tab-verify" class="tab-content active">
+    <div class="card">
+      <h2>Dateien hochladen</h2>
+      <div class="upload-grid">
+        <label class="upload-zone" id="csvZone">
+          <div class="upload-icon">📄</div>
+          <strong id="csvLabel">CSV von Tally hochladen</strong>
+          <p>Submissions-Export aus Tally</p>
+          <input type="file" id="csvInput" accept=".csv">
+        </label>
+        <label class="upload-zone" id="zipZone">
+          <div class="upload-icon">🗜️</div>
+          <strong id="zipLabel">ZIP mit Kassenbons hochladen</strong>
+          <p>Bilddownload aus Tally</p>
+          <input type="file" id="zipInput" accept=".zip">
+        </label>
+      </div>
+      <div style="margin-top:1rem;display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+        <button class="btn" id="startBtn" disabled onclick="startVerification()">Prüfung starten</button>
+        <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:#555;cursor:pointer;">
+          <input type="checkbox" id="skipSeenToggle" checked style="width:15px;height:15px;cursor:pointer;">
+          Bereits geprüfte Einreichungen überspringen
+        </label>
+        <span id="readyMsg" style="font-size:0.85rem;color:#888;"></span>
+      </div>
+    </div>
+    <div class="card" id="progressCard" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
+        <h2 style="margin:0;">Prüfung läuft</h2>
+        <button class="btn-stop" id="stopBtn" onclick="stopVerification()">⏹ Abbrechen</button>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <p style="font-size:0.85rem;color:#555;margin-top:0.5rem;" id="progressText">Wird vorbereitet...</p>
+      <div class="log-area" id="logArea" style="margin-top:0.75rem;"></div>
+    </div>
+    <div id="resultsSection" style="display:none;">
+      <div class="stats" style="grid-template-columns:repeat(5,1fr);">
+        <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Gesamt</div></div>
+        <div class="stat"><div class="stat-num" style="color:#1a6b3a;" id="statApproved">0</div><div class="stat-label">Genehmigt</div></div>
+        <div class="stat"><div class="stat-num" style="color:#a32d2d;" id="statRejected">0</div><div class="stat-label">Abgelehnt</div></div>
+        <div class="stat"><div class="stat-num" style="color:#8a5c00;" id="statDuplicate">0</div><div class="stat-label">Duplikat</div></div>
+        <div class="stat"><div class="stat-num" style="color:#666;" id="statSkipped">0</div><div class="stat-label">Übersprungen</div></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
+          <h2 style="margin:0;">Ergebnisse</h2>
+          <button class="btn btn-secondary" onclick="exportExcel(tallyResults,'3Bears_Tally_'+today())">Excel exportieren</button>
+        </div>
+        <table class="results-table"><thead><tr>
+          <th>Eingereicht</th><th>Vorname</th><th>Nachname</th><th>E-Mail</th>
+          <th>Händler</th><th>Datum</th><th>Bon-Betrag</th>
+          <th>3Bears Produkte</th><th>Produktpreise</th><th>Fingerabdruck</th><th>Status</th><th>Grund</th>
+        </tr></thead><tbody id="tallyBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-email" class="tab-content">
+    <div class="card">
+      <h2>Kassenbons aus E-Mails prüfen</h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">Lade die Kassenbon-Anhänge hoch und trage Vorname, Nachname und E-Mail ein. Die KI prüft jeden Bon automatisch.</p>
+      <label class="drop-zone" id="emailDrop">
+        <div class="upload-icon">🖼️</div>
+        <strong>Kassenbon-Bilder auswählen</strong>
+        <p>JPG, PNG, WEBP, GIF, PDF, SVG — mehrere gleichzeitig möglich</p>
+        <input type="file" id="emailImgInput" accept="image/*,.pdf,.svg" multiple>
+      </label>
+    </div>
+    <div id="emailImgList" style="display:none;">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h2 style="margin:0;">Teilnehmer-Daten eingeben</h2>
+          <button class="btn" id="emailVerifyBtn" onclick="runEmailVerification()">Alle prüfen</button>
+        </div>
+        <div id="emailRows"></div>
+      </div>
+    </div>
+    <div id="emailResultsSection" style="display:none;">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <h2 style="margin:0;">Ergebnisse</h2>
+          <button class="btn btn-secondary" onclick="exportExcel(emailResults,'3Bears_Email_'+today())">Excel exportieren</button>
+        </div>
+        <table class="results-table"><thead><tr>
+          <th>Vorname</th><th>Nachname</th><th>E-Mail</th>
+          <th>Händler</th><th>Datum</th><th>Bon-Betrag</th>
+          <th>3Bears Produkte</th><th>Produktpreise</th><th>Fingerabdruck</th><th>Status</th>
+        </tr></thead><tbody id="emailBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-excel" class="tab-content">
+    <div class="card">
+      <h2>Bestehendes Excel importieren</h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">Lade das bisherige Tracking-Excel hoch. Alle Einträge werden als <strong>Genehmigt (Manuell)</strong> importiert.</p>
+      <label class="upload-zone" id="excelImportZone" style="max-width:400px;">
+        <div class="upload-icon">📊</div>
+        <strong id="excelImportLabel">Tracking-Excel hochladen</strong>
+        <p>Tracking_Kassenbon_GS.xlsx</p>
+        <input type="file" id="excelImportInput" accept=".xlsx,.xls">
+      </label>
+    </div>
+    <div id="excelImportResults" style="display:none;">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
+          <h2 style="margin:0;">Importierte Einträge</h2>
+          <div class="actions">
+            <span id="excelFlagMsg" style="font-size:0.85rem;color:#8a5c00;"></span>
+            <button class="btn btn-secondary" onclick="exportExcel(excelImportResults,'3Bears_Excel_Import_'+today())">Excel exportieren</button>
+          </div>
+        </div>
+        <table><thead><tr>
+          <th>Datum</th><th>Vorname</th><th>Nachname</th><th>E-Mail</th>
+          <th>Händler</th><th>3Bears Produkt</th><th>Preis</th><th>Status</th>
+        </tr></thead><tbody id="excelImportBody"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-merge" class="tab-content">
+    <div class="card">
+      <h2>Excel-Dateien zusammenführen</h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">Lade alle Export-Dateien hoch. Duplikate werden automatisch entfernt.</p>
+      <label class="drop-zone" id="mergeDrop">
+        <div class="upload-icon">📂</div>
+        <strong>Excel-Dateien auswählen</strong>
+        <p>Mehrere .xlsx Dateien gleichzeitig möglich</p>
+        <input type="file" id="mergeInput" accept=".xlsx" multiple>
+      </label>
+      <div class="file-chips" id="fileChips"></div>
+      <div style="margin-top:1rem;display:flex;gap:0.75rem;align-items:center;">
+        <button class="btn" id="mergeBtn" disabled onclick="runMerge()">Zusammenführen</button>
+        <span id="mergeMsg" style="font-size:0.85rem;color:#888;"></span>
+      </div>
+    </div>
+    <div class="card" id="mergeResultCard" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
+        <h2 style="margin:0;">Zusammengeführte Ergebnisse</h2>
+        <button class="btn" onclick="exportMerged()">Master-Excel herunterladen</button>
+      </div>
+      <div class="merge-summary" id="mergeSummary"></div>
+      <div style="margin-top:1rem;"><table class="results-table"><thead><tr>
+        <th>Eingereicht</th><th>Vorname</th><th>Nachname</th><th>E-Mail</th>
+        <th>Händler</th><th>Datum</th><th>Bon-Betrag</th>
+        <th>3Bears Produkte</th><th>Produktpreise</th><th>Fingerabdruck</th><th>Status</th>
+      </tr></thead><tbody id="mergeBody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- Admin-only: teach the tool new retailers / products -->
+  <div id="tab-admin" class="tab-content">
+    <div class="card">
+      <h2>Neuen Händler hinzufügen</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="field"><label>Händlername (Anzeige)</label><input id="rName" placeholder="z.B. Combi"></div>
+        <div class="field"><label>OCR-Varianten (Komma-getrennt)</label><input id="rAliases" placeholder="Combi, COMBI, Combi Verbrauchermarkt"></div>
+      </div>
+      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;margin-bottom:1rem;"><input type="checkbox" id="rEligible" checked> Teilnahmeberechtigt</label>
+      <button class="btn" onclick="addRetailer()">Händler speichern</button>
+      <div id="rMsg" style="font-size:0.85rem;color:#1a6b3a;margin-top:0.5rem;"></div>
+    </div>
+    <div class="card">
+      <h2>Neues Produkt / neue Bon-Schreibweise hinzufügen</h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">So bringst du der KI eine neue Schreibweise bei, die auf einem Bon auftaucht.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="field"><label>Produktname (sauber)</label><input id="pName" placeholder="z.B. 3Bears Overnight Oats"></div>
+        <div class="field"><label>Händler</label><select id="pRetailer"></select></div>
+      </div>
+      <div class="field"><label>Bon-Schreibweisen (Komma-getrennt)</label><input id="pVariants" placeholder="3B.OVERN OATS, 3BEA OVERNIGHT"></div>
+      <button class="btn" onclick="addProduct()">Produkt speichern</button>
+      <div id="pMsg" style="font-size:0.85rem;color:#1a6b3a;margin-top:0.5rem;"></div>
+    </div>
+    <div class="card">
+      <h2>Aktuelle Stammdaten</h2>
+      <div style="display:flex;gap:0.75rem;margin-bottom:1rem;"><button class="btn btn-secondary btn-sm" onclick="loadAdminData()">Aktualisieren</button></div>
+      <h2 style="font-size:0.8rem;">Händler</h2>
+      <table><thead><tr><th>Name</th><th>Varianten</th><th>Berechtigt</th></tr></thead><tbody id="adminRetailers"></tbody></table>
+      <h2 style="font-size:0.8rem;margin-top:1.5rem;">Produkte</h2>
+      <table><thead><tr><th>Produkt</th><th>Händler</th><th>Schreibweisen</th></tr></thead><tbody id="adminProducts"></tbody></table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const CFG = window.KASSENBON_CONFIG || {};
+const CONFIGURED = CFG.SUPABASE_URL && !/REPLACE_ME/.test(CFG.SUPABASE_URL || '');
+const sb = CONFIGURED ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY) : null;
+const HEADERS = ['Eingereicht','Vorname','Nachname','E-Mail','Händler','Datum','Bon-Betrag','3Bears Produkte','Produktpreise','Fingerabdruck','Status','Grund'];
+let currentUser = null, isAdmin = false;
+
+// ---------------- Auth (Entra via Supabase) ----------------
+async function signIn() {
+  if (!sb) { document.getElementById('gateErr').textContent = 'Konfiguration fehlt — config.js befüllen.'; return; }
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'azure',
+    options: { scopes: 'openid email profile', redirectTo: window.location.origin }
+  });
+  if (error) document.getElementById('gateErr').textContent = error.message;
+}
+async function signOut() { await sb.auth.signOut(); location.reload(); }
+
+async function initAuth() {
+  if (!sb) { document.getElementById('gate').classList.remove('hidden'); document.getElementById('gateErr').textContent = 'Konfiguration fehlt — bitte config.js mit den Supabase-Daten befüllen.'; return; }
+  let session = null;
+  try { session = (await sb.auth.getSession()).data.session; }
+  catch (e) { document.getElementById('gate').classList.remove('hidden'); document.getElementById('gateErr').textContent = 'Verbindung zu Supabase fehlgeschlagen.'; return; }
+  if (!session) { document.getElementById('gate').classList.remove('hidden'); return; }
+  currentUser = session.user;
+  document.getElementById('gate').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('userEmail').textContent = currentUser.email || '';
+  // Upsert into app_users so admins can grant roles; determine admin.
+  await sb.from('app_users').upsert({ id: currentUser.id, email: currentUser.email }, { onConflict: 'id' });
+  const { data: me } = await sb.from('app_users').select('role').eq('id', currentUser.id).single();
+  isAdmin = me?.role === 'admin';
+  if (isAdmin) { document.getElementById('adminTab').classList.remove('hidden'); loadAdminData(); }
+}
+if (sb) sb.auth.onAuthStateChange((_e, s) => { if (s && !currentUser) initAuth(); });
+initAuth();
+
+async function authToken() { const { data: { session } } = await sb.auth.getSession(); return session?.access_token; }
+
+// ---------------- Shared helpers (ported from prototype) ----------------
+function today() { return new Date().toISOString().substring(0,10); }
+function switchTab(name,btn){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');}
+function log(m){const el=document.getElementById('logArea');el.innerHTML+=m+'<br>';el.scrollTop=el.scrollHeight;}
+function verdictBadge(v){if(v==='Genehmigt (KI)')return '<span class="badge badge-green">Genehmigt (KI)</span>';if(v==='Genehmigt (Manuell)')return '<span class="badge badge-blue">Genehmigt (Manuell)</span>';if(v==='Duplikat')return '<span class="badge badge-amber">Duplikat</span>';if(v==='Kein Bild')return '<span class="badge badge-grey">Kein Bild</span>';if(v==='Bereits geprüft')return '<span class="badge badge-grey">Bereits geprüft</span>';return '<span class="badge badge-red">'+(v||'Abgelehnt')+'</span>';}
+function isEmailTruncated(e){return !e||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
+
+function friendlyError(rawMsg){if(!rawMsg)return '';const m=String(rawMsg);if(/8000 pixel|image dimensions exceed/i.test(m))return 'Bild zu groß (Auflösung über 8000 px) — wird automatisch verkleinert';if(/file.*too large|zu groß/i.test(m))return 'Datei zu groß — bitte als JPG/PNG unter 15 MB einreichen';if(/network|fetch|cors/i.test(m))return 'Netzwerkfehler — Internetverbindung prüfen und erneut versuchen';if(/rate_limit/i.test(m))return 'API-Limit erreicht — wird automatisch wiederholt';if(/nicht angemeldet|sitzung/i.test(m))return 'Sitzung abgelaufen — bitte neu anmelden';if(/overloaded/i.test(m))return 'KI-Service vorübergehend überlastet — bitte später erneut versuchen';return m.replace(/^(invalid_request_error|api_error|overloaded_error):\s*/i,'').substring(0,120);}
+
+function cleanProductName(raw){if(!raw)return raw;const s=raw.trim();const lo=s.toLowerCase().replace(/[^a-z0-9]/g,'');if(lo.includes('overnoatsbana')||(lo.includes('3bea')&&lo.includes('bana')))return 'Overnight Oats Banana Split 400g';if(lo.includes('overnoatserdbe')||lo.includes('overnoatsedle')||(lo.includes('3bea')&&(lo.includes('erdbe')||lo.includes('edle'))))return 'Overnight Oats Edle Erdbeere 400g';if(/^3bea\.?overn/i.test(s)||/^3beaov/i.test(s)||/^3b\.overn/i.test(s))return 'Overnight Oats 400g';return raw;}
+function dateFromFilename(fn){if(!fn)return '';let m=fn.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return `${m[3]}.${m[2]}.${m[1]}`;m=fn.match(/(\d{4})(\d{2})(\d{2})/);if(m&&+m[2]<=12&&+m[3]<=31)return `${m[3]}.${m[2]}.${m[1]}`;m=fn.match(/(\d{2})[.\-](\d{2})[.\-](\d{4})/);if(m)return `${m[1]}.${m[2]}.${m[3]}`;return '';}
+function formatDate(raw){if(!raw||raw==='–'||raw==='Unbekannt')return raw||'–';if(/^\d{2}\.\d{2}\.\d{4}$/.test(raw.trim()))return raw.trim();const iso=raw.match(/^(\d{4})-(\d{2})-(\d{2})/);if(iso)return `${iso[3]}.${iso[2]}.${iso[1]}`;const sy=raw.match(/^(\d{2})\.(\d{2})\.(\d{2})$/);if(sy)return `${sy[1]}.${sy[2]}.20${sy[3]}`;return raw;}
+function toISO(v){if(!v)return null;const d=new Date(v);return isNaN(d)?null:d.toISOString();}
+
+let tallyResults=[], emailResults=[], excelImportResults=[];
+let tallyFingerprints=new Set(), csvData=[], zipFile=null, emailImages=[];
+let mergeFiles=[], mergedResults=[];
+let stopRequested=false;
+
+function stopVerification(){stopRequested=true;document.getElementById('stopBtn').disabled=true;document.getElementById('stopBtn').textContent='Wird abgebrochen…';log('⏹ Abbruch angefordert — laufendes Bild wird noch fertig geprüft...');}
+
+function rowToArray(r){const p=Array.isArray(r.products)?r.products:[{name:r.product||'–',price:r.product_price||'–'}];return [r.submittedAt||'',r.vorname||'',r.nachname||'',r.email||'',r.retailer||'–',r.date||'–',r.total||'–',p.map(x=>x.name).join(' | '),p.map(x=>x.price||'–').join(' | '),r.fingerprint||'',r.verdict||'',r.reason||''];}
+function exportExcel(data,filename){const wb=XLSX.utils.book_new();const rows=[HEADERS,...data.map(rowToArray)];const ws=XLSX.utils.aoa_to_sheet(rows,{raw:false});ws['!cols']=[12,10,10,25,15,12,10,22,12,22,16].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,'Ergebnisse');XLSX.writeFile(wb,filename+'.xlsx');}
+
+async function resizeIfNeeded(b64,mediaType){return new Promise(resolve=>{const img=new Image();img.onload=()=>{const MAX=7000;if(img.naturalWidth<=MAX&&img.naturalHeight<=MAX){resolve({b64,mediaType});return;}const scale=Math.min(MAX/img.naturalWidth,MAX/img.naturalHeight);const c=document.createElement('canvas');c.width=Math.floor(img.naturalWidth*scale);c.height=Math.floor(img.naturalHeight*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve({b64:c.toDataURL('image/jpeg',0.92).split(',')[1],mediaType:'image/jpeg'});};img.onerror=()=>resolve({b64,mediaType});img.src='data:'+mediaType+';base64,'+b64;});}
+
+// ---------------- Secure verification (via Netlify Function) ----------------
+async function callVerify(base64,mediaType){
+  if(mediaType!=='application/pdf'){const r=await resizeIfNeeded(base64,mediaType);base64=r.b64;mediaType=r.mediaType;}
+  const token=await authToken();
+  if(!token) throw new Error('Nicht angemeldet');
+  const resp=await fetch('/.netlify/functions/verify-receipt',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({base64,mediaType})});
+  const d=await resp.json();
+  if(!resp.ok) throw new Error(d.error||('HTTP '+resp.status));
+  if(Array.isArray(d.products)) d.products=d.products.map(p=>({...p,name:cleanProductName(p.name)}));
+  if(d.date) d.date=formatDate(d.date);
+  return d;
+}
+
+// ---------------- Supabase persistence ----------------
+async function saveReceipt(entry){
+  try{
+    const { data, error } = await sb.from('receipts').insert({
+      source: entry.source, submission_id: entry.submissionId||null, submitted_at: toISO(entry.submittedAt),
+      vorname: entry.vorname||null, nachname: entry.nachname||null, email: entry.email||null,
+      retailer: entry.retailer||null, receipt_date: entry.date||null, total: entry.total||null,
+      fingerprint: entry.fingerprint||null, verdict: entry.verdict||null, reason: entry.reason||null,
+      raw_model_json: { products: entry.products||[] }, checked_by: currentUser?.id||null
+    }).select('id').single();
+    if(error){ log('⚠ Speichern fehlgeschlagen: '+error.message); return; }
+    const prods=(entry.products||[]).map(p=>({receipt_id:data.id,name:p.name,price:p.price}));
+    if(prods.length) await sb.from('receipt_products').insert(prods);
+  }catch(e){ log('⚠ Speichern fehlgeschlagen: '+e.message); }
+}
+
+// Load already-checked submissions + approved fingerprints from Supabase.
+async function loadSeen(){
+  const seen={}, fps=new Set();
+  const { data } = await sb.from('receipts')
+    .select('submission_id,fingerprint,verdict,retailer,receipt_date,total,vorname,nachname,email,reason,raw_model_json')
+    .order('checked_at',{ascending:false}).limit(10000);
+  for(const r of (data||[])){
+    if(r.submission_id && !seen[r.submission_id]) seen[r.submission_id]=r;
+    if(r.fingerprint && String(r.verdict||'').startsWith('Genehmigt')) fps.add(r.fingerprint);
+  }
+  return {seen,fps};
+}
+
+// ---------------- CSV / files ----------------
+document.getElementById('csvInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{csvData=parseCSV(ev.target.result);document.getElementById('csvLabel').textContent=f.name+' ✓';document.getElementById('csvZone').classList.add('done');checkReady();};r.readAsText(f,'UTF-8');});
+document.getElementById('zipInput').addEventListener('change',e=>{zipFile=e.target.files[0];if(!zipFile)return;document.getElementById('zipLabel').textContent=zipFile.name+' ✓';document.getElementById('zipZone').classList.add('done');checkReady();});
+function checkReady(){const ok=csvData.length>0&&zipFile;document.getElementById('startBtn').disabled=!ok;document.getElementById('readyMsg').textContent=ok?csvData.length+' CSV-Einträge geladen.':'';}
+function parseCSV(text){const lines=text.trim().split('\n');if(lines.length<2)return[];const h=parseCSVLine(lines[0]);return lines.slice(1).map(l=>{const v=parseCSVLine(l),o={};h.forEach((k,i)=>o[k.trim().replace(/^﻿/,'')]=(v[i]||'').trim());return o;}).filter(r=>Object.values(r).some(v=>v));}
+function parseCSVLine(line){const r=[];let c='',q=false;for(let i=0;i<line.length;i++){if(line[i]==='"'){q=!q;}else if(line[i]===','&&!q){r.push(c);c='';}else{c+=line[i];}}r.push(c);return r;}
+function arrayBufferToBase64(buffer){const bytes=new Uint8Array(buffer);const cs=0x8000;let res='';for(let i=0;i<bytes.length;i+=cs){res+=String.fromCharCode.apply(null,bytes.subarray(i,i+cs));}return btoa(res);}
+function fileToBase64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f);});}
+
+// PDF
+const PDFJS_URL='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+const PDFJS_WORKER='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+async function loadPDFJS(){if(window.pdfjsLib)return;await new Promise((res,rej)=>{const s=document.createElement('script');s.src=PDFJS_URL;s.onload=res;s.onerror=rej;document.head.appendChild(s);});window.pdfjsLib.GlobalWorkerOptions.workerSrc=PDFJS_WORKER;}
+async function pdfToBase64(ab){await loadPDFJS();const pdf=await pdfjsLib.getDocument({data:ab.slice(0)}).promise;const page=await pdf.getPage(1);const vp=page.getViewport({scale:3.0});const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;const ctx=c.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,c.width,c.height);await page.render({canvasContext:ctx,viewport:vp}).promise;return {b64:c.toDataURL('image/jpeg',0.92).split(',')[1],isPdf:false};}
+async function fileToBase64AndType(file){const ext=(file.name.toLowerCase().match(/\.([^.]+)$/)||['',''])[1];if(file.type==='application/pdf'||ext==='pdf'){const ab=await file.arrayBuffer();const r=await pdfToBase64(ab);return {base64:r.b64,mediaType:'image/jpeg'};}if(/^(heic|heif|raw|dng|cr2|nef)$/.test(ext))return {base64:null,mediaType:null,unsupported:ext.toUpperCase()};const b64=await fileToBase64(file);const mt=file.type&&file.type!=='application/octet-stream'?file.type:ext==='png'?'image/png':ext==='webp'?'image/webp':ext==='gif'?'image/gif':'image/jpeg';return {base64:b64,mediaType:mt};}
+
+// ---------------- Tab 1: Tally ----------------
+async function startVerification(){
+  document.getElementById('startBtn').disabled=true;
+  document.getElementById('progressCard').style.display='block';
+  document.getElementById('stopBtn').disabled=false;document.getElementById('stopBtn').textContent='⏹ Abbrechen';document.getElementById('stopBtn').style.display='';
+  document.getElementById('resultsSection').style.display='none';
+  document.getElementById('tallyBody').innerHTML='';document.getElementById('logArea').innerHTML='';
+  tallyResults=[];tallyFingerprints=new Set();stopRequested=false;
+  const skipSeen=document.getElementById('skipSeenToggle').checked;
+  const {seen,fps}=await loadSeen();fps.forEach(f=>tallyFingerprints.add(f));
+
+  const zip=await JSZip.loadAsync(zipFile);
+  const imgs=Object.keys(zip.files).filter(n=>/\.(jpg|jpeg|png|gif|webp|pdf|svg)$/i.test(n)&&!zip.files[n].dir);
+  log('ZIP: '+imgs.length+' Bilder. CSV: '+csvData.length+' Einträge.');
+
+  function slugifyFilename(raw){if(!raw)return '';try{let name=raw.split('/').pop().split('?')[0];name=name.replace(/\+/g,' ');name=decodeURIComponent(name);name=name.toLowerCase().trim();name=name.replace(/\s*\(\d+\)\s*/g,'');name=name.replace(/\s+/g,'-');return name;}catch(e){return raw.toLowerCase().trim().replace(/\s+/g,'-');}}
+  const csvLookup={};
+  for(const row of csvData){const u=row['Kassenbon hochladen']||'';if(u){const k=slugifyFilename(u);if(k)csvLookup[k]=row;}}
+
+  for(let i=0;i<imgs.length;i++){
+    if(stopRequested){document.getElementById('progressText').textContent='Prüfung abgebrochen nach '+i+' von '+imgs.length+' Bildern.';log('⏹ Prüfung abgebrochen. '+tallyResults.length+' Einträge verarbeitet.');break;}
+    const imgName=imgs[i];
+    document.getElementById('progressFill').style.width=Math.round((i+1)/imgs.length*100)+'%';
+    document.getElementById('progressText').textContent='Prüfe Bild '+(i+1)+' von '+imgs.length+': '+imgName;
+    const imgSlug=slugifyFilename(imgName);const imgSlugBase=imgSlug.replace(/\.[^.]+$/,'');
+    let row=csvLookup[imgSlug]||csvLookup[Object.keys(csvLookup).find(k=>k===imgSlugBase)||'']||null;
+    if(!row){const key=Object.keys(csvLookup).find(k=>k.length>6&&(k.includes(imgSlugBase)||imgSlugBase.includes(k.replace(/\.[^.]+$/,''))));if(key)row=csvLookup[key];}
+    function csvCol(row,...needles){if(!row)return '';const keys=Object.keys(row);for(const needle of needles){const n=needle.toLowerCase().trim();const key=keys.find(k=>k.toLowerCase().trim()===n||k.toLowerCase().trim().includes(n));if(key&&row[key]!=null&&String(row[key]).trim()!=='')return String(row[key]).trim();}return '';}
+    const vorname=csvCol(row,'vorname','first name','firstname');
+    const nachname=csvCol(row,'nachname','last name','lastname','surname','name');
+    const email=csvCol(row,'e-mail-adresse','e-mail','email','mail');
+    const submittedAtRaw=csvCol(row,'submitted at','submittedat','eingereicht');
+    const submittedAt=submittedAtRaw||(!row?dateFromFilename(imgName):'');
+    const submissionId=row?csvCol(row,'submission id','submissionid')||(email+'_'+submittedAtRaw):imgName;
+    if(!row)log('⚠ Kein CSV-Eintrag für: '+imgName+' — wird trotzdem geprüft.');
+
+    let b64=null,mt='image/jpeg',loadError=null;
+    try{
+      const rawBuffer=await zip.files[imgName].async('arraybuffer');const raw=rawBuffer.slice(0);
+      if(raw.byteLength>15*1024*1024){loadError='Datei zu groß ('+Math.round(raw.byteLength/1024/1024*10)/10+' MB)';log('⚠ '+loadError+': '+imgName);}
+      else{const ext=(imgName.toLowerCase().match(/\.([^.]+)$/)||['','jpg'])[1];
+        if(ext==='pdf'){const r=await pdfToBase64(raw);b64=r.b64;mt='image/jpeg';log('Bild: '+imgName+' (PDF→JPG)');}
+        else if(ext==='svg'){const t=new TextDecoder().decode(raw);const blob=new Blob([t],{type:'image/svg+xml'});const url=URL.createObjectURL(blob);await new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=img.naturalWidth||800;c.height=img.naturalHeight||1200;c.getContext('2d').drawImage(img,0,0);b64=c.toDataURL('image/jpeg',0.92).split(',')[1];mt='image/jpeg';URL.revokeObjectURL(url);res();};img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('SVG konnte nicht gerendert werden'));};img.src=url;});log('Bild: '+imgName+' (SVG→JPG)');}
+        else{b64=arrayBufferToBase64(raw);mt=ext==='png'?'image/png':ext==='webp'?'image/webp':ext==='gif'?'image/gif':'image/jpeg';log('Bild: '+imgName);}
+      }
+    }catch(e){loadError=friendlyError(e.message);log('⚠ Fehler beim Laden: '+imgName+' — '+e.message);}
+
+    let res={retailer:'–',date:'–',total:'–',products:[{name:'–',price:'–'}],verdict:'Abgelehnt',fingerprint:'',reason:''};
+    let wasSkipped=false;
+    const seenEntry=seen[submissionId];
+    if(skipSeen&&seenEntry&&submissionId&&submissionId!==imgName){
+      res={retailer:seenEntry.retailer,date:seenEntry.receipt_date,total:seenEntry.total,products:(seenEntry.raw_model_json?.products)||[{name:'–',price:'–'}],fingerprint:seenEntry.fingerprint,reason:friendlyError(seenEntry.reason),verdict:'Bereits geprüft'};
+      wasSkipped=true;log('⏭ Übersprungen (bereits geprüft): '+submissionId);
+    } else if(loadError){res.verdict='Abgelehnt';res.reason=loadError;res.products=[{name:'Datei nicht ladbar',price:'–'}];}
+    else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.reason=friendlyError(e.message);res.products=[{name:'Prüfung fehlgeschlagen',price:'–'}];log('API-Fehler: '+e.message);}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';}
+
+    const fp=res.fingerprint;
+    if(!wasSkipped){
+      if(fp&&tallyFingerprints.has(fp)){res.verdict='Duplikat';log('Duplikat: '+fp);}
+      else if(fp&&res.verdict==='Genehmigt (KI)'){tallyFingerprints.add(fp);}
+      await saveReceipt({source:'tally',submissionId,submittedAt,vorname,nachname,email,...res});
+    }
+
+    const displayDate=formatDate(submittedAt)||(submittedAt||'').substring(0,10)||'–';
+    const entry={submissionId,submittedAt,vorname,nachname,email,csvMatched:!!row,...res};
+    tallyResults.push(entry);
+    const p=Array.isArray(entry.products)?entry.products:[{name:'–',price:'–'}];
+    const tr=document.createElement('tr');
+    const emailDisplay=entry.email?`<td style="font-size:0.8rem;">${entry.email}</td>`:entry.csvMatched?`<td>–</td>`:`<td><span class="badge badge-amber" title="Kein CSV-Eintrag.">⚠ Kein CSV-Eintrag</span></td>`;
+    tr.innerHTML=`<td>${displayDate}</td><td>${entry.vorname||'–'}</td><td>${entry.nachname||'–'}</td>${emailDisplay}<td>${entry.retailer}</td><td>${entry.date}</td><td>${entry.total}</td><td>${p.map(x=>x.name).join('<br>')}</td><td>${p.map(x=>x.price||'–').join('<br>')}</td><td><span class="fingerprint" title="${entry.fingerprint}">${entry.fingerprint||'–'}</span></td><td>${verdictBadge(entry.verdict)}</td><td class="error-text">${entry.reason||''}</td>`;
+    document.getElementById('tallyBody').appendChild(tr);
+    document.getElementById('resultsSection').style.display='block';
+    document.getElementById('statTotal').textContent=tallyResults.length;
+    document.getElementById('statApproved').textContent=tallyResults.filter(r=>String(r.verdict||'').startsWith('Genehmigt')).length;
+    document.getElementById('statRejected').textContent=tallyResults.filter(r=>r.verdict==='Abgelehnt').length;
+    document.getElementById('statDuplicate').textContent=tallyResults.filter(r=>r.verdict==='Duplikat').length;
+    document.getElementById('statSkipped').textContent=tallyResults.filter(r=>r.verdict==='Bereits geprüft').length;
+    if(!wasSkipped) await new Promise(r=>setTimeout(r,2500));
+  }
+  if(!stopRequested){document.getElementById('progressText').textContent='Prüfung abgeschlossen. '+imgs.length+' Bilder geprüft.';log('Fertig. '+tallyResults.length+' Einträge geprüft.');}
+  document.getElementById('stopBtn').style.display='none';document.getElementById('startBtn').disabled=false;
+}
+
+// ---------------- Tab 2: Email ----------------
+document.getElementById('emailImgInput').addEventListener('change',e=>loadEmailImages(Array.from(e.target.files)));
+document.getElementById('emailDrop').addEventListener('dragover',e=>{e.preventDefault();e.currentTarget.classList.add('dragover');});
+document.getElementById('emailDrop').addEventListener('dragleave',e=>e.currentTarget.classList.remove('dragover'));
+document.getElementById('emailDrop').addEventListener('drop',e=>{e.preventDefault();e.currentTarget.classList.remove('dragover');loadEmailImages(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')||f.type==='application/pdf'||/\.(pdf|svg)$/i.test(f.name)));});
+function loadEmailImages(files){emailImages=files;const rows=document.getElementById('emailRows');rows.innerHTML='';files.forEach((f,i)=>{const url=URL.createObjectURL(f);const div=document.createElement('div');div.className='img-row';div.innerHTML=`<img src="${url}" class="img-thumb"><div style="font-size:0.8rem;color:#888;min-width:100px;">${f.name}</div><div class="img-fields"><input type="text" placeholder="Vorname" id="ef-vn-${i}"><input type="text" placeholder="Nachname" id="ef-nn-${i}"><input type="email" placeholder="E-Mail" id="ef-em-${i}"></div><div class="img-status" id="es-${i}"></div>`;rows.appendChild(div);});document.getElementById('emailImgList').style.display=files.length>0?'block':'none';}
+async function runEmailVerification(){const btn=document.getElementById('emailVerifyBtn');btn.disabled=true;btn.textContent='Prüfung läuft...';emailResults=[];const {fps}=await loadSeen();for(let i=0;i<emailImages.length;i++){const f=emailImages[i];const vorname=document.getElementById('ef-vn-'+i).value.trim();const nachname=document.getElementById('ef-nn-'+i).value.trim();const email=document.getElementById('ef-em-'+i).value.trim();document.getElementById('es-'+i).innerHTML='<span style="color:#888;font-size:0.8rem;">Prüfe...</span>';const {base64:b64,mediaType:mt,unsupported}=await fileToBase64AndType(f);let res={retailer:'–',date:'–',total:'–',products:[{name:'Nicht gefunden',price:'–'}],verdict:'Abgelehnt',fingerprint:'',reason:''};if(unsupported){res.reason='Dateiformat nicht unterstützt ('+unsupported+').';}else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.reason=friendlyError(e.message);}}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';if(res.fingerprint&&fps.has(res.fingerprint)){res.verdict='Duplikat';}else if(res.fingerprint&&res.verdict==='Genehmigt (KI)'){fps.add(res.fingerprint);}const entry={source:'email',submittedAt:'',vorname,nachname,email,...res};emailResults.push(entry);if(res.verdict!=='Duplikat')await saveReceipt(entry);document.getElementById('es-'+i).innerHTML=verdictBadge(res.verdict);const p=Array.isArray(entry.products)?entry.products:[{name:'–',price:'–'}];const tr=document.createElement('tr');tr.innerHTML=`<td>${entry.vorname}</td><td>${entry.nachname}</td><td style="font-size:0.8rem;">${entry.email}</td><td>${entry.retailer}</td><td>${entry.date}</td><td>${entry.total}</td><td>${p.map(x=>x.name).join('<br>')}</td><td>${p.map(x=>x.price||'–').join('<br>')}</td><td><span class="fingerprint">${entry.fingerprint||'–'}</span></td><td>${verdictBadge(entry.verdict)}</td>`;document.getElementById('emailBody').appendChild(tr);}document.getElementById('emailResultsSection').style.display='block';btn.disabled=false;btn.textContent='Alle prüfen';}
+
+// ---------------- Tab 3: Excel import ----------------
+document.getElementById('excelImportInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;document.getElementById('excelImportLabel').textContent=f.name+' ✓';document.getElementById('excelImportZone').classList.add('done');const buf=await f.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});let ws=null;for(const name of wb.SheetNames){const d=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1});if((d[0]||[]).some(h=>String(h||'').toLowerCase().includes('vorname'))){ws=wb.Sheets[name];break;}}if(!ws){alert('Kein passendes Tabellenblatt gefunden.');return;}const data=XLSX.utils.sheet_to_json(ws,{header:1});const hdrs=data[0].map(h=>String(h||'').trim().toLowerCase());const ci=k=>hdrs.findIndex(h=>h.includes(k));const iV=ci('vorname'),iN=ci('nachname'),iE=hdrs.findIndex(h=>h.includes('mail')),iP=ci('produkt'),iPr=ci('preis'),iH=hdrs.findIndex(h=>h.includes('handel')||h.includes('einzel')),iD=ci('datum');excelImportResults=[];let flags=0;const tbody=document.getElementById('excelImportBody');tbody.innerHTML='';for(let i=1;i<data.length;i++){const row=data[i];const vn=String(row[iV]||'').trim(),nn=String(row[iN]||'').trim();if(!vn&&!nn)continue;const em=String(row[iE]||'').trim();const prod=String(row[iP]||'').trim();const preis=iPr>=0?String(row[iPr]||'').trim():'–';const haendler=iH>=0?String(row[iH]||'').trim():'–';const datum=formatDate(iD>=0?String(row[iD]||'').trim():'–');const trunc=isEmailTruncated(em);if(trunc&&em)flags++;const entry={source:'excel',submittedAt:datum,vorname:vn,nachname:nn,email:em,retailer:haendler,date:datum,total:'–',products:[{name:prod,price:preis}],fingerprint:'',verdict:'Genehmigt (Manuell)'};excelImportResults.push(entry);await saveReceipt(entry);const tr=document.createElement('tr');const ec=trunc&&em?`<td><span class="flag-email" title="E-Mail unvollständig">⚠ ${em}</span></td>`:`<td style="font-size:0.8rem;">${em||'–'}</td>`;tr.innerHTML=`<td>${datum||'–'}</td><td>${vn}</td><td>${nn}</td>${ec}<td>${haendler||'–'}</td><td>${prod||'–'}</td><td>${preis||'–'}</td><td>${verdictBadge('Genehmigt (Manuell)')}</td>`;tbody.appendChild(tr);}document.getElementById('excelFlagMsg').textContent=flags>0?'⚠ '+flags+' unvollständige E-Mail-Adressen':'';document.getElementById('excelImportResults').style.display='block';});
+
+// ---------------- Tab 4: Merge ----------------
+document.getElementById('mergeInput').addEventListener('change',e=>addMergeFiles(Array.from(e.target.files)));
+document.getElementById('mergeDrop').addEventListener('dragover',e=>{e.preventDefault();e.currentTarget.classList.add('dragover');});
+document.getElementById('mergeDrop').addEventListener('dragleave',e=>e.currentTarget.classList.remove('dragover'));
+document.getElementById('mergeDrop').addEventListener('drop',e=>{e.preventDefault();e.currentTarget.classList.remove('dragover');addMergeFiles(Array.from(e.dataTransfer.files).filter(f=>f.name.endsWith('.xlsx')));});
+function addMergeFiles(files){files.forEach(f=>{if(!mergeFiles.find(x=>x.name===f.name))mergeFiles.push(f);});renderChips();}
+function renderChips(){document.getElementById('fileChips').innerHTML=mergeFiles.map((f,i)=>`<div class="chip">${f.name}<button onclick="removeFile(${i})">×</button></div>`).join('');document.getElementById('mergeBtn').disabled=mergeFiles.length<1;document.getElementById('mergeMsg').textContent=mergeFiles.length>0?mergeFiles.length+' Datei(en) bereit.':'';}
+function removeFile(i){mergeFiles.splice(i,1);renderChips();}
+async function runMerge(){document.getElementById('mergeBtn').disabled=true;document.getElementById('mergeMsg').textContent='Wird zusammengeführt...';const all=[];for(const f of mergeFiles){const buf=await f.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];XLSX.utils.sheet_to_json(ws,{header:1}).slice(1).filter(r=>r.some(c=>c)).forEach(r=>all.push(r));}const seen=new Set();mergedResults=[];for(const r of all){const k=(r[3]||'')+'|'+(r[0]||'')+'|'+(r[9]||'');if(!seen.has(k)){seen.add(k);mergedResults.push(r);}}mergedResults.sort((a,b)=>String(b[0]).localeCompare(String(a[0])));const tbody=document.getElementById('mergeBody');tbody.innerHTML='';mergedResults.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=HEADERS.slice(0,11).map((h,i)=>{if(i===10)return`<td>${verdictBadge(r[i]||'')}</td>`;if(i===9)return`<td><span class="fingerprint" title="${r[i]||''}">${r[i]||'–'}</span></td>`;return`<td>${r[i]||'–'}</td>`;}).join('');tbody.appendChild(tr);});const ki=mergedResults.filter(r=>r[10]==='Genehmigt (KI)').length;const man=mergedResults.filter(r=>r[10]==='Genehmigt (Manuell)').length;const rej=mergedResults.filter(r=>r[10]==='Abgelehnt').length;const dup=mergedResults.filter(r=>r[10]==='Duplikat').length;const rem=all.length-mergedResults.length;document.getElementById('mergeSummary').innerHTML=`<strong>${mergedResults.length}</strong> eindeutige Einträge aus <strong>${mergeFiles.length}</strong> Dateien &nbsp;·&nbsp; <span style="color:#1a6b3a">${ki} Genehmigt (KI)</span> &nbsp;·&nbsp; <span style="color:#1a56a3">${man} Genehmigt (Manuell)</span> &nbsp;·&nbsp; <span style="color:#a32d2d">${rej} Abgelehnt</span> &nbsp;·&nbsp; <span style="color:#8a5c00">${dup} Duplikat</span>`+(rem>0?` &nbsp;·&nbsp; <span style="color:#888">${rem} Duplikate entfernt</span>`:'');document.getElementById('mergeResultCard').style.display='block';document.getElementById('mergeBtn').disabled=false;document.getElementById('mergeMsg').textContent='Fertig.';}
+function exportMerged(){const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet([HEADERS,...mergedResults],{raw:false});ws['!cols']=[12,10,10,25,15,12,10,22,12,22,16].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,'Ergebnisse');XLSX.writeFile(wb,'3Bears_Kassenbon_Master_'+today()+'.xlsx');}
+
+// ---------------- Tab 5: Admin (Stammdaten & Training) ----------------
+let adminRetailerList=[];
+async function loadAdminData(){
+  const { data: rets } = await sb.from('retailers').select('id,name,aliases,eligible').order('name');
+  adminRetailerList=rets||[];
+  document.getElementById('adminRetailers').innerHTML=(rets||[]).map(r=>`<tr><td>${r.name}</td><td style="font-size:0.8rem;color:#666;">${(r.aliases||[]).join(', ')}</td><td>${r.eligible?'✓':'—'}</td></tr>`).join('');
+  const sel=document.getElementById('pRetailer');sel.innerHTML='<option value="">Allgemein (alle Händler)</option>'+(rets||[]).map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  const { data: prods } = await sb.from('products').select('canonical_name,variants,retailers(name)').order('canonical_name');
+  document.getElementById('adminProducts').innerHTML=(prods||[]).map(p=>`<tr><td>${p.canonical_name}</td><td>${p.retailers?.name||'Allgemein'}</td><td style="font-size:0.8rem;color:#666;">${(p.variants||[]).join(', ')}</td></tr>`).join('');
+}
+async function addRetailer(){
+  const name=document.getElementById('rName').value.trim();
+  const aliases=document.getElementById('rAliases').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const eligible=document.getElementById('rEligible').checked;
+  if(!name){document.getElementById('rMsg').textContent='Bitte einen Namen eingeben.';return;}
+  const { error }=await sb.from('retailers').insert({name,aliases,eligible,created_by:currentUser.id});
+  document.getElementById('rMsg').textContent=error?('Fehler: '+error.message):('✓ '+name+' gespeichert.');
+  if(!error){document.getElementById('rName').value='';document.getElementById('rAliases').value='';loadAdminData();}
+}
+async function addProduct(){
+  const canonical_name=document.getElementById('pName').value.trim();
+  const retailer_id=document.getElementById('pRetailer').value||null;
+  const variants=document.getElementById('pVariants').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!canonical_name){document.getElementById('pMsg').textContent='Bitte einen Produktnamen eingeben.';return;}
+  const { error }=await sb.from('products').insert({canonical_name,retailer_id,variants,created_by:currentUser.id});
+  document.getElementById('pMsg').textContent=error?('Fehler: '+error.message):('✓ '+canonical_name+' gespeichert.');
+  if(!error){document.getElementById('pName').value='';document.getElementById('pVariants').value='';loadAdminData();}
+}
+</script>
+</body>
+</html>

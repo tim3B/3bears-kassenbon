@@ -1,0 +1,13 @@
+[build]
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# SPA-ish: serve the app for any path
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
