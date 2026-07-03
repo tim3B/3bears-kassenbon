@@ -2,6 +2,13 @@
   publish = "public"
   functions = "netlify/functions"
 
+[build.environment]
+  # public/config.js intentionally contains the PUBLIC Supabase URL + anon key
+  # (safe in the browser; RLS + Entra protect the data). Exclude it from secret
+  # scanning so those public values don't fail the build. The service_role key is
+  # NEVER in the repo — only a Netlify env var — so it stays covered by scanning.
+  SECRETS_SCAN_OMIT_PATHS = "public/config.js"
+
 [functions]
   node_bundler = "esbuild"
 
