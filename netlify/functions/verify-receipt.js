@@ -10,7 +10,9 @@
 //   SUPABASE_SERVICE_ROLE  - service_role key (server-only; bypasses RLS to read config)
 //   ANTHROPIC_MODEL        - optional, defaults to claude-haiku-4-5-20251001
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001';
+// Most accurate widely-available OCR model (high-resolution vision). Override per-deploy
+// with the ANTHROPIC_MODEL env var (e.g. 'claude-sonnet-5' to cut cost at near-Opus quality).
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-4-8';
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
