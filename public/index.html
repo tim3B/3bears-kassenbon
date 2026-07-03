@@ -15,6 +15,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .header h1 { font-size: 1.1rem; font-weight: 500; }
 .header .user { font-size: 0.8rem; opacity: 0.85; display: flex; align-items: center; gap: 0.75rem; }
 .header .user button { background: rgba(255,255,255,0.15); color: white; border: none; border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 0.8rem; cursor: pointer; }
+.verbadge { font-size: 0.7rem; background: rgba(255,255,255,0.2); padding: 0.1rem 0.45rem; border-radius: 6px; cursor: pointer; vertical-align: middle; font-weight: 400; margin-left: 0.4rem; }
+.verbadge:hover { background: rgba(255,255,255,0.35); }
+.langtoggle { display: inline-flex; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; overflow: hidden; }
+.langtoggle button { background: transparent; color: white; border: none; padding: 0.25rem 0.55rem; font-size: 0.75rem; cursor: pointer; }
+.langtoggle button.active { background: rgba(255,255,255,0.28); font-weight: 600; }
 .tabs { display: flex; border-bottom: 2px solid #e0e0d8; margin-bottom: 1.5rem; flex-wrap: wrap; }
 .tab { padding: 0.65rem 1.25rem; font-size: 0.9rem; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; color: #888; background: none; border-top: none; border-left: none; border-right: none; font-weight: 500; }
 .tab.active { color: #1a3a2a; border-bottom-color: #1a3a2a; }
@@ -81,6 +86,16 @@ tr:last-child td { border-bottom: none; }
 #gate p { font-size: 0.9rem; color: #666; margin-bottom: 1.5rem; }
 #gate button { width: 100%; }
 #gate .err { color: #a32d2d; font-size: 0.85rem; margin-top: 1rem; }
+/* Changelog modal */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1100; }
+.modal-box { background: white; border-radius: 12px; padding: 1.5rem; max-width: 560px; width: 90%; max-height: 80vh; overflow-y: auto; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.modal-head h2 { font-size: 1rem; color: #1a3a2a; }
+.modal-head button { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #888; }
+.cl-version { font-weight: 600; color: #1a3a2a; margin: 1.1rem 0 0.3rem; }
+.cl-version:first-child { margin-top: 0; }
+.cl-date { font-size: 0.75rem; color: #888; font-weight: 400; margin-left: 0.4rem; }
+.cl-list { font-size: 0.85rem; color: #444; margin: 0.3rem 0 0.5rem 1.1rem; line-height: 1.6; }
 .hidden { display: none !important; }
 </style>
 </head>
@@ -91,78 +106,82 @@ tr:last-child td { border-bottom: none; }
   <div class="box">
     <div class="upload-icon">🧾</div>
     <h1>3Bears Kassenbon-Prüftool</h1>
-    <p>Bitte mit deinem 3Bears Microsoft-Konto anmelden.</p>
-    <button class="btn" onclick="signIn()">Mit Microsoft anmelden</button>
+    <p data-i18n="gate.subtitle">Bitte mit deinem 3Bears Microsoft-Konto anmelden.</p>
+    <button class="btn" onclick="signIn()" data-i18n="gate.signin">Mit Microsoft anmelden</button>
     <div class="err" id="gateErr"></div>
   </div>
 </div>
 
 <div id="app" class="hidden">
 <div class="header">
-  <h1>3Bears Kassenbon-Prüftool</h1>
-  <div class="user"><span id="userEmail"></span><button onclick="signOut()">Abmelden</button></div>
+  <h1>3Bears Kassenbon-Prüftool<span class="verbadge" id="verBadge" onclick="openChangelog()"></span></h1>
+  <div class="user">
+    <span class="langtoggle"><button id="langDe" onclick="setLang('de')">DE</button><button id="langEn" onclick="setLang('en')">EN</button></span>
+    <span id="userEmail"></span>
+    <button onclick="signOut()" data-i18n="header.signout">Abmelden</button>
+  </div>
 </div>
 <div class="container">
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('verify',this)">Tally-Prüfung</button>
-    <button class="tab" onclick="switchTab('email',this)">E-Mail Import</button>
-    <button class="tab" onclick="switchTab('excel',this)">Excel Import</button>
-    <button class="tab" onclick="switchTab('merge',this)">Zusammenführen</button>
-    <button class="tab hidden" id="adminTab" onclick="switchTab('admin',this)">Stammdaten &amp; Training</button>
+    <button class="tab active" onclick="switchTab('verify',this)" data-i18n="tab.verify">Tally-Prüfung</button>
+    <button class="tab" onclick="switchTab('email',this)" data-i18n="tab.email">E-Mail Import</button>
+    <button class="tab" onclick="switchTab('excel',this)" data-i18n="tab.excel">Excel Import</button>
+    <button class="tab" onclick="switchTab('merge',this)" data-i18n="tab.merge">Zusammenführen</button>
+    <button class="tab hidden" id="adminTab" onclick="switchTab('admin',this)" data-i18n="tab.admin">Stammdaten &amp; Training</button>
   </div>
 
   <div id="tab-verify" class="tab-content active">
     <div class="card">
-      <h2>Dateien hochladen</h2>
+      <h2 data-i18n="verify.uploadFiles">Dateien hochladen</h2>
       <div class="upload-grid">
         <label class="upload-zone" id="csvZone">
           <div class="upload-icon">📄</div>
-          <strong id="csvLabel">CSV von Tally hochladen</strong>
-          <p>Submissions-Export aus Tally</p>
+          <strong id="csvLabel" data-i18n="verify.csvUpload">CSV von Tally hochladen</strong>
+          <p data-i18n="verify.csvSub">Submissions-Export aus Tally</p>
           <input type="file" id="csvInput" accept=".csv">
         </label>
         <label class="upload-zone" id="zipZone">
           <div class="upload-icon">🗜️</div>
-          <strong id="zipLabel">ZIP mit Kassenbons hochladen</strong>
-          <p>Bilddownload aus Tally</p>
+          <strong id="zipLabel" data-i18n="verify.zipUpload">ZIP mit Kassenbons hochladen</strong>
+          <p data-i18n="verify.zipSub">Bilddownload aus Tally</p>
           <input type="file" id="zipInput" accept=".zip">
         </label>
       </div>
       <div style="margin-top:1rem;display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
-        <button class="btn" id="startBtn" disabled onclick="startVerification()">Prüfung starten</button>
+        <button class="btn" id="startBtn" disabled onclick="startVerification()" data-i18n="verify.start">Prüfung starten</button>
         <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;color:#555;cursor:pointer;">
           <input type="checkbox" id="skipSeenToggle" checked style="width:15px;height:15px;cursor:pointer;">
-          Bereits geprüfte Einreichungen überspringen
+          <span data-i18n="verify.skipSeen">Bereits geprüfte Einreichungen überspringen</span>
         </label>
         <span id="readyMsg" style="font-size:0.85rem;color:#888;"></span>
       </div>
     </div>
     <div class="card" id="progressCard" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-        <h2 style="margin:0;">Prüfung läuft</h2>
-        <button class="btn-stop" id="stopBtn" onclick="stopVerification()">⏹ Abbrechen</button>
+        <h2 style="margin:0;" data-i18n="verify.running">Prüfung läuft</h2>
+        <button class="btn-stop" id="stopBtn" onclick="stopVerification()" data-i18n="btn.cancel">⏹ Abbrechen</button>
       </div>
       <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-      <p style="font-size:0.85rem;color:#555;margin-top:0.5rem;" id="progressText">Wird vorbereitet...</p>
+      <p style="font-size:0.85rem;color:#555;margin-top:0.5rem;" id="progressText" data-i18n="verify.preparing">Wird vorbereitet...</p>
       <div class="log-area" id="logArea" style="margin-top:0.75rem;"></div>
     </div>
     <div id="resultsSection" style="display:none;">
       <div class="stats" style="grid-template-columns:repeat(5,1fr);">
-        <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label">Gesamt</div></div>
-        <div class="stat"><div class="stat-num" style="color:#1a6b3a;" id="statApproved">0</div><div class="stat-label">Genehmigt</div></div>
-        <div class="stat"><div class="stat-num" style="color:#a32d2d;" id="statRejected">0</div><div class="stat-label">Abgelehnt</div></div>
-        <div class="stat"><div class="stat-num" style="color:#8a5c00;" id="statDuplicate">0</div><div class="stat-label">Duplikat</div></div>
-        <div class="stat"><div class="stat-num" style="color:#666;" id="statSkipped">0</div><div class="stat-label">Übersprungen</div></div>
+        <div class="stat"><div class="stat-num" id="statTotal">0</div><div class="stat-label" data-i18n="stats.total">Gesamt</div></div>
+        <div class="stat"><div class="stat-num" style="color:#1a6b3a;" id="statApproved">0</div><div class="stat-label" data-i18n="stats.approved">Genehmigt</div></div>
+        <div class="stat"><div class="stat-num" style="color:#a32d2d;" id="statRejected">0</div><div class="stat-label" data-i18n="stats.rejected">Abgelehnt</div></div>
+        <div class="stat"><div class="stat-num" style="color:#8a5c00;" id="statDuplicate">0</div><div class="stat-label" data-i18n="stats.duplicate">Duplikat</div></div>
+        <div class="stat"><div class="stat-num" style="color:#666;" id="statSkipped">0</div><div class="stat-label" data-i18n="stats.skipped">Übersprungen</div></div>
       </div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
-          <h2 style="margin:0;">Ergebnisse</h2>
-          <button class="btn btn-secondary" onclick="exportExcel(tallyResults,'3Bears_Tally_'+today())">Excel exportieren</button>
+          <h2 style="margin:0;" data-i18n="common.results">Ergebnisse</h2>
+          <button class="btn btn-secondary" onclick="exportExcel(tallyResults,'3Bears_Tally_'+today())" data-i18n="common.exportExcel">Excel exportieren</button>
         </div>
         <table class="results-table"><thead><tr>
-          <th>Eingereicht</th><th>Vorname</th><th>Nachname</th><th>E-Mail</th>
-          <th>Händler</th><th>Datum</th><th>Bon-Betrag</th>
-          <th>3Bears Produkte</th><th>Produktpreise</th><th>Fingerabdruck</th><th>Status</th><th>Grund</th>
+          <th data-i18n="th.submitted">Eingereicht</th><th data-i18n="th.firstName">Vorname</th><th data-i18n="th.lastName">Nachname</th><th data-i18n="th.email">E-Mail</th>
+          <th data-i18n="th.retailer">Händler</th><th data-i18n="th.date">Datum</th><th data-i18n="th.amount">Bon-Betrag</th>
+          <th data-i18n="th.products">3Bears Produkte</th><th data-i18n="th.prices">Produktpreise</th><th data-i18n="th.fingerprint">Fingerabdruck</th><th data-i18n="th.status">Status</th><th data-i18n="th.reason">Grund</th>
         </tr></thead><tbody id="tallyBody"></tbody></table>
       </div>
     </div>
@@ -170,20 +189,20 @@ tr:last-child td { border-bottom: none; }
 
   <div id="tab-email" class="tab-content">
     <div class="card">
-      <h2>Kassenbons aus E-Mails prüfen</h2>
-      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">Lade die Kassenbon-Anhänge hoch und trage Vorname, Nachname und E-Mail ein. Die KI prüft jeden Bon automatisch.</p>
+      <h2 data-i18n="email.title">Kassenbons aus E-Mails prüfen</h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;" data-i18n="email.desc">Lade die Kassenbon-Anhänge hoch und trage Vorname, Nachname und E-Mail ein. Die KI prüft jeden Bon automatisch.</p>
       <label class="drop-zone" id="emailDrop">
         <div class="upload-icon">🖼️</div>
-        <strong>Kassenbon-Bilder auswählen</strong>
-        <p>JPG, PNG, WEBP, GIF, PDF, SVG — mehrere gleichzeitig möglich</p>
+        <strong data-i18n="email.choose">Kassenbon-Bilder auswählen</strong>
+        <p data-i18n="email.formats">JPG, PNG, WEBP, GIF, PDF, SVG — mehrere gleichzeitig möglich</p>
         <input type="file" id="emailImgInput" accept="image/*,.pdf,.svg" multiple>
       </label>
     </div>
     <div id="emailImgList" style="display:none;">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-          <h2 style="margin:0;">Teilnehmer-Daten eingeben</h2>
-          <button class="btn" id="emailVerifyBtn" onclick="runEmailVerification()">Alle prüfen</button>
+          <h2 style="margin:0;" data-i18n="email.enterData">Teilnehmer-Daten eingeben</h2>
+          <button class="btn" id="emailVerifyBtn" onclick="runEmailVerification()" data-i18n="email.checkAll">Alle prüfen</button>
         </div>
         <div id="emailRows"></div>
       </div>
@@ -191,13 +210,13 @@ tr:last-child td { border-bottom: none; }
     <div id="emailResultsSection" style="display:none;">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-          <h2 style="margin:0;">Ergebnisse</h2>
-          <button class="btn btn-secondary" onclick="exportExcel(emailResults,'3Bears_Email_'+today())">Excel exportieren</button>
+          <h2 style="margin:0;" data-i18n="common.results">Ergebnisse</h2>
+          <button class="btn btn-secondary" onclick="exportExcel(emailResults,'3Bears_Email_'+today())" data-i18n="common.exportExcel">Excel exportieren</button>
         </div>
         <table class="results-table"><thead><tr>
-          <th>Vorname</th><th>Nachname</th><th>E-Mail</th>
-          <th>Händler</th><th>Datum</th><th>Bon-Betrag</th>
-          <th>3Bears Produkte</th><th>Produktpreise</th><th>Fingerabdruck</th><th>Status</th>
+          <th data-i18n="th.firstName">Vorname</th><th data-i18n="th.lastName">Nachname</th><th data-i18n="th.email">E-Mail</th>
+          <th data-i18n="th.retailer">Händler</th><th data-i18n="th.date">Datum</th><th data-i18n="th.amount">Bon-Betrag</th>
+          <th data-i18n="th.products">3Bears Produkte</th><th data-i18n="th.prices">Produktpreise</th><th data-i18n="th.fingerprint">Fingerabdruck</th><th data-i18n="th.status">Status</th>
         </tr></thead><tbody id="emailBody"></tbody></table>
       </div>
     </div>
@@ -205,11 +224,11 @@ tr:last-child td { border-bottom: none; }
 
   <div id="tab-excel" class="tab-content">
     <div class="card">
-      <h2>Bestehendes Excel importieren</h2>
-      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">Lade das bisherige Tracking-Excel hoch. Alle Einträge werden als <strong>Genehmigt (Manuell)</strong> importiert.</p>
+      <h2 data-i18n="excel.title">Bestehendes Excel importieren</h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;" data-i18n-html="excel.desc">Lade das bisherige Tracking-Excel hoch. Alle Einträge werden als <strong>Genehmigt (Manuell)</strong> importiert.</p>
       <label class="upload-zone" id="excelImportZone" style="max-width:400px;">
         <div class="upload-icon">📊</div>
-        <strong id="excelImportLabel">Tracking-Excel hochladen</strong>
+        <strong id="excelImportLabel" data-i18n="excel.upload">Tracking-Excel hochladen</strong>
         <p>Tracking_Kassenbon_GS.xlsx</p>
         <input type="file" id="excelImportInput" accept=".xlsx,.xls">
       </label>
@@ -217,15 +236,15 @@ tr:last-child td { border-bottom: none; }
     <div id="excelImportResults" style="display:none;">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
-          <h2 style="margin:0;">Importierte Einträge</h2>
+          <h2 style="margin:0;" data-i18n="excel.imported">Importierte Einträge</h2>
           <div class="actions">
             <span id="excelFlagMsg" style="font-size:0.85rem;color:#8a5c00;"></span>
-            <button class="btn btn-secondary" onclick="exportExcel(excelImportResults,'3Bears_Excel_Import_'+today())">Excel exportieren</button>
+            <button class="btn btn-secondary" onclick="exportExcel(excelImportResults,'3Bears_Excel_Import_'+today())" data-i18n="common.exportExcel">Excel exportieren</button>
           </div>
         </div>
         <table><thead><tr>
-          <th>Datum</th><th>Vorname</th><th>Nachname</th><th>E-Mail</th>
-          <th>Händler</th><th>3Bears Produkt</th><th>Preis</th><th>Status</th>
+          <th data-i18n="th.date">Datum</th><th data-i18n="th.firstName">Vorname</th><th data-i18n="th.lastName">Nachname</th><th data-i18n="th.email">E-Mail</th>
+          <th data-i18n="th.retailer">Händler</th><th data-i18n="th.product">3Bears Produkt</th><th data-i18n="th.price">Preis</th><th data-i18n="th.status">Status</th>
         </tr></thead><tbody id="excelImportBody"></tbody></table>
       </div>
     </div>
@@ -233,30 +252,30 @@ tr:last-child td { border-bottom: none; }
 
   <div id="tab-merge" class="tab-content">
     <div class="card">
-      <h2>Excel-Dateien zusammenführen</h2>
-      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">Lade alle Export-Dateien hoch. Duplikate werden automatisch entfernt.</p>
+      <h2 data-i18n="merge.title">Excel-Dateien zusammenführen</h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;" data-i18n="merge.desc">Lade alle Export-Dateien hoch. Duplikate werden automatisch entfernt.</p>
       <label class="drop-zone" id="mergeDrop">
         <div class="upload-icon">📂</div>
-        <strong>Excel-Dateien auswählen</strong>
-        <p>Mehrere .xlsx Dateien gleichzeitig möglich</p>
+        <strong data-i18n="merge.choose">Excel-Dateien auswählen</strong>
+        <p data-i18n="merge.sub">Mehrere .xlsx Dateien gleichzeitig möglich</p>
         <input type="file" id="mergeInput" accept=".xlsx" multiple>
       </label>
       <div class="file-chips" id="fileChips"></div>
       <div style="margin-top:1rem;display:flex;gap:0.75rem;align-items:center;">
-        <button class="btn" id="mergeBtn" disabled onclick="runMerge()">Zusammenführen</button>
+        <button class="btn" id="mergeBtn" disabled onclick="runMerge()" data-i18n="merge.button">Zusammenführen</button>
         <span id="mergeMsg" style="font-size:0.85rem;color:#888;"></span>
       </div>
     </div>
     <div class="card" id="mergeResultCard" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem;">
-        <h2 style="margin:0;">Zusammengeführte Ergebnisse</h2>
-        <button class="btn" onclick="exportMerged()">Master-Excel herunterladen</button>
+        <h2 style="margin:0;" data-i18n="merge.resultTitle">Zusammengeführte Ergebnisse</h2>
+        <button class="btn" onclick="exportMerged()" data-i18n="merge.download">Master-Excel herunterladen</button>
       </div>
       <div class="merge-summary" id="mergeSummary"></div>
       <div style="margin-top:1rem;"><table class="results-table"><thead><tr>
-        <th>Eingereicht</th><th>Vorname</th><th>Nachname</th><th>E-Mail</th>
-        <th>Händler</th><th>Datum</th><th>Bon-Betrag</th>
-        <th>3Bears Produkte</th><th>Produktpreise</th><th>Fingerabdruck</th><th>Status</th>
+        <th data-i18n="th.submitted">Eingereicht</th><th data-i18n="th.firstName">Vorname</th><th data-i18n="th.lastName">Nachname</th><th data-i18n="th.email">E-Mail</th>
+        <th data-i18n="th.retailer">Händler</th><th data-i18n="th.date">Datum</th><th data-i18n="th.amount">Bon-Betrag</th>
+        <th data-i18n="th.products">3Bears Produkte</th><th data-i18n="th.prices">Produktpreise</th><th data-i18n="th.fingerprint">Fingerabdruck</th><th data-i18n="th.status">Status</th>
       </tr></thead><tbody id="mergeBody"></tbody></table></div>
     </div>
   </div>
@@ -264,48 +283,147 @@ tr:last-child td { border-bottom: none; }
   <!-- Admin-only: teach the tool new retailers / products -->
   <div id="tab-admin" class="tab-content">
     <div class="card">
-      <h2>Neuen Händler hinzufügen</h2>
+      <h2 data-i18n="admin.addRetailer">Neuen Händler hinzufügen</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-        <div class="field"><label>Händlername (Anzeige)</label><input id="rName" placeholder="z.B. Combi"></div>
-        <div class="field"><label>OCR-Varianten (Komma-getrennt)</label><input id="rAliases" placeholder="Combi, COMBI, Combi Verbrauchermarkt"></div>
+        <div class="field"><label data-i18n="admin.retailerName">Händlername (Anzeige)</label><input id="rName" placeholder="z.B. Combi"></div>
+        <div class="field"><label data-i18n="admin.aliases">OCR-Varianten (Komma-getrennt)</label><input id="rAliases" placeholder="Combi, COMBI, Combi Verbrauchermarkt"></div>
       </div>
-      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;margin-bottom:1rem;"><input type="checkbox" id="rEligible" checked> Teilnahmeberechtigt</label>
-      <button class="btn" onclick="addRetailer()">Händler speichern</button>
+      <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.85rem;margin-bottom:1rem;"><input type="checkbox" id="rEligible" checked> <span data-i18n="admin.eligible">Teilnahmeberechtigt</span></label>
+      <button class="btn" onclick="addRetailer()" data-i18n="admin.saveRetailer">Händler speichern</button>
       <div id="rMsg" style="font-size:0.85rem;color:#1a6b3a;margin-top:0.5rem;"></div>
     </div>
     <div class="card">
-      <h2>Neues Produkt / neue Bon-Schreibweise hinzufügen</h2>
-      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">So bringst du der KI eine neue Schreibweise bei, die auf einem Bon auftaucht.</p>
+      <h2 data-i18n="admin.addProduct">Neues Produkt / neue Bon-Schreibweise hinzufügen</h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;" data-i18n="admin.productDesc">So bringst du der KI eine neue Schreibweise bei, die auf einem Bon auftaucht.</p>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-        <div class="field"><label>Produktname (sauber)</label><input id="pName" placeholder="z.B. 3Bears Overnight Oats"></div>
-        <div class="field"><label>Händler</label><select id="pRetailer"></select></div>
+        <div class="field"><label data-i18n="admin.productName">Produktname (sauber)</label><input id="pName" placeholder="z.B. 3Bears Overnight Oats"></div>
+        <div class="field"><label data-i18n="admin.retailer">Händler</label><select id="pRetailer"></select></div>
       </div>
-      <div class="field"><label>Bon-Schreibweisen (Komma-getrennt)</label><input id="pVariants" placeholder="3B.OVERN OATS, 3BEA OVERNIGHT"></div>
-      <button class="btn" onclick="addProduct()">Produkt speichern</button>
+      <div class="field"><label data-i18n="admin.variants">Bon-Schreibweisen (Komma-getrennt)</label><input id="pVariants" placeholder="3B.OVERN OATS, 3BEA OVERNIGHT"></div>
+      <button class="btn" onclick="addProduct()" data-i18n="admin.saveProduct">Produkt speichern</button>
       <div id="pMsg" style="font-size:0.85rem;color:#1a6b3a;margin-top:0.5rem;"></div>
     </div>
     <div class="card">
-      <h2>Aktuelle Stammdaten</h2>
-      <div style="display:flex;gap:0.75rem;margin-bottom:1rem;"><button class="btn btn-secondary btn-sm" onclick="loadAdminData()">Aktualisieren</button></div>
-      <h2 style="font-size:0.8rem;">Händler</h2>
-      <table><thead><tr><th>Name</th><th>Varianten</th><th>Berechtigt</th></tr></thead><tbody id="adminRetailers"></tbody></table>
-      <h2 style="font-size:0.8rem;margin-top:1.5rem;">Produkte</h2>
-      <table><thead><tr><th>Produkt</th><th>Händler</th><th>Schreibweisen</th></tr></thead><tbody id="adminProducts"></tbody></table>
+      <h2 data-i18n="admin.currentData">Aktuelle Stammdaten</h2>
+      <div style="display:flex;gap:0.75rem;margin-bottom:1rem;"><button class="btn btn-secondary btn-sm" onclick="loadAdminData()" data-i18n="admin.refresh">Aktualisieren</button></div>
+      <h2 style="font-size:0.8rem;" data-i18n="admin.retailers">Händler</h2>
+      <table><thead><tr><th data-i18n="th.name">Name</th><th data-i18n="th.variants">Varianten</th><th data-i18n="th.eligibleCol">Berechtigt</th></tr></thead><tbody id="adminRetailers"></tbody></table>
+      <h2 style="font-size:0.8rem;margin-top:1.5rem;" data-i18n="admin.products">Produkte</h2>
+      <table><thead><tr><th data-i18n="th.product">Produkt</th><th data-i18n="th.retailer">Händler</th><th data-i18n="th.spellings">Schreibweisen</th></tr></thead><tbody id="adminProducts"></tbody></table>
     </div>
   </div>
 </div>
 </div>
 
+<!-- Changelog modal -->
+<div id="changelogModal" class="modal hidden" onclick="if(event.target===this)closeChangelog()">
+  <div class="modal-box">
+    <div class="modal-head"><h2 data-i18n="changelog.title">Änderungsprotokoll</h2><button onclick="closeChangelog()">✕</button></div>
+    <div id="changelogBody"></div>
+  </div>
+</div>
+
 <script>
+// ==================== i18n ====================
+const APP_VERSION = '1.1.0';
+const I18N = {
+  de: {
+    'gate.subtitle':'Bitte mit deinem 3Bears Microsoft-Konto anmelden.',
+    'gate.signin':'Mit Microsoft anmelden',
+    'gate.configMissing':'Konfiguration fehlt — bitte config.js mit den Supabase-Daten befüllen.',
+    'gate.connFailed':'Verbindung zu Supabase fehlgeschlagen.',
+    'header.signout':'Abmelden',
+    'tab.verify':'Tally-Prüfung','tab.email':'E-Mail Import','tab.excel':'Excel Import','tab.merge':'Zusammenführen','tab.admin':'Stammdaten & Training',
+    'verify.uploadFiles':'Dateien hochladen','verify.csvUpload':'CSV von Tally hochladen','verify.csvSub':'Submissions-Export aus Tally','verify.zipUpload':'ZIP mit Kassenbons hochladen','verify.zipSub':'Bilddownload aus Tally','verify.start':'Prüfung starten','verify.skipSeen':'Bereits geprüfte Einreichungen überspringen','verify.running':'Prüfung läuft','verify.preparing':'Wird vorbereitet...',
+    'btn.cancel':'⏹ Abbrechen','cancelling':'Wird abgebrochen…','btn.checking':'Prüfung läuft...','status.checking':'Prüfe...',
+    'stats.total':'Gesamt','stats.approved':'Genehmigt','stats.rejected':'Abgelehnt','stats.duplicate':'Duplikat','stats.skipped':'Übersprungen',
+    'common.results':'Ergebnisse','common.exportExcel':'Excel exportieren',
+    'th.submitted':'Eingereicht','th.firstName':'Vorname','th.lastName':'Nachname','th.email':'E-Mail','th.retailer':'Händler','th.date':'Datum','th.amount':'Bon-Betrag','th.products':'3Bears Produkte','th.prices':'Produktpreise','th.fingerprint':'Fingerabdruck','th.status':'Status','th.reason':'Grund','th.product':'3Bears Produkt','th.price':'Preis','th.name':'Name','th.variants':'Varianten','th.eligibleCol':'Berechtigt','th.spellings':'Schreibweisen',
+    'email.title':'Kassenbons aus E-Mails prüfen','email.desc':'Lade die Kassenbon-Anhänge hoch und trage Vorname, Nachname und E-Mail ein. Die KI prüft jeden Bon automatisch.','email.choose':'Kassenbon-Bilder auswählen','email.formats':'JPG, PNG, WEBP, GIF, PDF, SVG — mehrere gleichzeitig möglich','email.enterData':'Teilnehmer-Daten eingeben','email.checkAll':'Alle prüfen','email.incomplete':'E-Mail unvollständig',
+    'ph.firstName':'Vorname','ph.lastName':'Nachname','ph.email':'E-Mail',
+    'excel.title':'Bestehendes Excel importieren','excel.desc':'Lade das bisherige Tracking-Excel hoch. Alle Einträge werden als <strong>Genehmigt (Manuell)</strong> importiert.','excel.upload':'Tracking-Excel hochladen','excel.imported':'Importierte Einträge','excel.noSheet':'Kein passendes Tabellenblatt gefunden.','excel.flag':'⚠ {0} unvollständige E-Mail-Adressen',
+    'merge.title':'Excel-Dateien zusammenführen','merge.desc':'Lade alle Export-Dateien hoch. Duplikate werden automatisch entfernt.','merge.choose':'Excel-Dateien auswählen','merge.sub':'Mehrere .xlsx Dateien gleichzeitig möglich','merge.button':'Zusammenführen','merge.resultTitle':'Zusammengeführte Ergebnisse','merge.download':'Master-Excel herunterladen','merge.merging':'Wird zusammengeführt...','merge.filesReady':'{0} Datei(en) bereit.','merge.done':'Fertig.','merge.uniqueEntries':'<strong>{0}</strong> eindeutige Einträge aus <strong>{1}</strong> Dateien','merge.removed':'{0} Duplikate entfernt',
+    'admin.addRetailer':'Neuen Händler hinzufügen','admin.retailerName':'Händlername (Anzeige)','admin.aliases':'OCR-Varianten (Komma-getrennt)','admin.eligible':'Teilnahmeberechtigt','admin.saveRetailer':'Händler speichern','admin.addProduct':'Neues Produkt / neue Bon-Schreibweise hinzufügen','admin.productDesc':'So bringst du der KI eine neue Schreibweise bei, die auf einem Bon auftaucht.','admin.productName':'Produktname (sauber)','admin.retailer':'Händler','admin.variants':'Bon-Schreibweisen (Komma-getrennt)','admin.saveProduct':'Produkt speichern','admin.currentData':'Aktuelle Stammdaten','admin.refresh':'Aktualisieren','admin.retailers':'Händler','admin.products':'Produkte','admin.generalOption':'Allgemein (alle Händler)','admin.general':'Allgemein','admin.needName':'Bitte einen Namen eingeben.','admin.needProduct':'Bitte einen Produktnamen eingeben.','admin.saved':'✓ {0} gespeichert.','admin.error':'Fehler: {0}',
+    'verdict.aiApproved':'Genehmigt (KI)','verdict.manualApproved':'Genehmigt (Manuell)','verdict.duplicate':'Duplikat','verdict.noImage':'Kein Bild','verdict.alreadyChecked':'Bereits geprüft','verdict.rejected':'Abgelehnt',
+    'prod.notLoadable':'Datei nicht ladbar','prod.checkFailed':'Prüfung fehlgeschlagen','prod.notFound':'Nicht gefunden',
+    'badge.noCsv':'⚠ Kein CSV-Eintrag','badge.noCsvTitle':'Kein CSV-Eintrag.',
+    'msg.csvLoaded':'{0} CSV-Einträge geladen.',
+    'progress.checking':'Prüfe Bild {0} von {1}: {2}','progress.done':'Prüfung abgeschlossen. {0} Bilder geprüft.','progress.cancelled':'Prüfung abgebrochen nach {0} von {1} Bildern.',
+    'log.zipCsv':'ZIP: {0} Bilder. CSV: {1} Einträge.','log.noCsv':'⚠ Kein CSV-Eintrag für: {0} — wird trotzdem geprüft.','log.image':'Bild: {0}','log.imagePdf':'Bild: {0} (PDF→JPG)','log.imageSvg':'Bild: {0} (SVG→JPG)','log.skipped':'⏭ Übersprungen (bereits geprüft): {0}','log.duplicate':'Duplikat: {0}','log.cancelReq':'⏹ Abbruch angefordert — laufendes Bild wird noch fertig geprüft...','log.cancelled':'⏹ Prüfung abgebrochen. {0} Einträge verarbeitet.','log.finished':'Fertig. {0} Einträge geprüft.','log.loadErr':'⚠ Fehler beim Laden: {0} — {1}','log.apiErr':'API-Fehler: {0}','log.saveFail':'⚠ Speichern fehlgeschlagen: {0}',
+    'err.imageTooBig':'Bild zu groß (Auflösung über 8000 px) — wird automatisch verkleinert','err.fileTooLarge':'Datei zu groß — bitte als JPG/PNG unter 15 MB einreichen','err.tooLargeMb':'Datei zu groß ({0} MB)','err.network':'Netzwerkfehler — Internetverbindung prüfen und erneut versuchen','err.rateLimit':'API-Limit erreicht — wird automatisch wiederholt','err.session':'Sitzung abgelaufen — bitte neu anmelden','err.overloaded':'KI-Service vorübergehend überlastet — bitte später erneut versuchen','err.svgRender':'SVG konnte nicht gerendert werden','err.unsupported':'Dateiformat nicht unterstützt ({0}).','err.notLoggedIn':'Nicht angemeldet',
+    'changelog.title':'Änderungsprotokoll'
+  },
+  en: {
+    'gate.subtitle':'Please sign in with your 3Bears Microsoft account.',
+    'gate.signin':'Sign in with Microsoft',
+    'gate.configMissing':'Configuration missing — please fill config.js with the Supabase details.',
+    'gate.connFailed':'Could not connect to Supabase.',
+    'header.signout':'Sign out',
+    'tab.verify':'Tally Check','tab.email':'Email Import','tab.excel':'Excel Import','tab.merge':'Merge','tab.admin':'Master Data & Training',
+    'verify.uploadFiles':'Upload files','verify.csvUpload':'Upload CSV from Tally','verify.csvSub':'Submissions export from Tally','verify.zipUpload':'Upload ZIP of receipts','verify.zipSub':'Image download from Tally','verify.start':'Start check','verify.skipSeen':'Skip already-checked submissions','verify.running':'Check running','verify.preparing':'Preparing...',
+    'btn.cancel':'⏹ Cancel','cancelling':'Cancelling…','btn.checking':'Checking...','status.checking':'Checking...',
+    'stats.total':'Total','stats.approved':'Approved','stats.rejected':'Rejected','stats.duplicate':'Duplicate','stats.skipped':'Skipped',
+    'common.results':'Results','common.exportExcel':'Export Excel',
+    'th.submitted':'Submitted','th.firstName':'First name','th.lastName':'Last name','th.email':'Email','th.retailer':'Retailer','th.date':'Date','th.amount':'Receipt total','th.products':'3Bears products','th.prices':'Product prices','th.fingerprint':'Fingerprint','th.status':'Status','th.reason':'Reason','th.product':'3Bears product','th.price':'Price','th.name':'Name','th.variants':'Variants','th.eligibleCol':'Eligible','th.spellings':'Spellings',
+    'email.title':'Check receipts from emails','email.desc':'Upload the receipt attachments and enter first name, last name and email. The AI checks each receipt automatically.','email.choose':'Select receipt images','email.formats':'JPG, PNG, WEBP, GIF, PDF, SVG — multiple at once','email.enterData':'Enter participant details','email.checkAll':'Check all','email.incomplete':'Email incomplete',
+    'ph.firstName':'First name','ph.lastName':'Last name','ph.email':'Email',
+    'excel.title':'Import existing Excel','excel.desc':'Upload the existing tracking Excel. All entries are imported as <strong>Approved (Manual)</strong>.','excel.upload':'Upload tracking Excel','excel.imported':'Imported entries','excel.noSheet':'No matching worksheet found.','excel.flag':'⚠ {0} incomplete email addresses',
+    'merge.title':'Merge Excel files','merge.desc':'Upload all export files. Duplicates are removed automatically.','merge.choose':'Select Excel files','merge.sub':'Multiple .xlsx files at once','merge.button':'Merge','merge.resultTitle':'Merged results','merge.download':'Download master Excel','merge.merging':'Merging...','merge.filesReady':'{0} file(s) ready.','merge.done':'Done.','merge.uniqueEntries':'<strong>{0}</strong> unique entries from <strong>{1}</strong> files','merge.removed':'{0} duplicates removed',
+    'admin.addRetailer':'Add new retailer','admin.retailerName':'Retailer name (display)','admin.aliases':'OCR variants (comma-separated)','admin.eligible':'Eligible','admin.saveRetailer':'Save retailer','admin.addProduct':'Add new product / receipt spelling','admin.productDesc':'This teaches the AI a new spelling that appears on a receipt.','admin.productName':'Product name (clean)','admin.retailer':'Retailer','admin.variants':'Receipt spellings (comma-separated)','admin.saveProduct':'Save product','admin.currentData':'Current master data','admin.refresh':'Refresh','admin.retailers':'Retailers','admin.products':'Products','admin.generalOption':'General (all retailers)','admin.general':'General','admin.needName':'Please enter a name.','admin.needProduct':'Please enter a product name.','admin.saved':'✓ {0} saved.','admin.error':'Error: {0}',
+    'verdict.aiApproved':'Approved (AI)','verdict.manualApproved':'Approved (Manual)','verdict.duplicate':'Duplicate','verdict.noImage':'No image','verdict.alreadyChecked':'Already checked','verdict.rejected':'Rejected',
+    'prod.notLoadable':'File not loadable','prod.checkFailed':'Check failed','prod.notFound':'Not found',
+    'badge.noCsv':'⚠ No CSV entry','badge.noCsvTitle':'No CSV entry.',
+    'msg.csvLoaded':'{0} CSV entries loaded.',
+    'progress.checking':'Checking image {0} of {1}: {2}','progress.done':'Check complete. {0} images checked.','progress.cancelled':'Check cancelled after {0} of {1} images.',
+    'log.zipCsv':'ZIP: {0} images. CSV: {1} entries.','log.noCsv':'⚠ No CSV entry for: {0} — checking anyway.','log.image':'Image: {0}','log.imagePdf':'Image: {0} (PDF→JPG)','log.imageSvg':'Image: {0} (SVG→JPG)','log.skipped':'⏭ Skipped (already checked): {0}','log.duplicate':'Duplicate: {0}','log.cancelReq':'⏹ Cancellation requested — the current image will finish first...','log.cancelled':'⏹ Check cancelled. {0} entries processed.','log.finished':'Done. {0} entries checked.','log.loadErr':'⚠ Error loading: {0} — {1}','log.apiErr':'API error: {0}','log.saveFail':'⚠ Save failed: {0}',
+    'err.imageTooBig':'Image too large (resolution over 8000 px) — resized automatically','err.fileTooLarge':'File too large — please submit as JPG/PNG under 15 MB','err.tooLargeMb':'File too large ({0} MB)','err.network':'Network error — check your internet connection and try again','err.rateLimit':'API limit reached — retrying automatically','err.session':'Session expired — please sign in again','err.overloaded':'AI service temporarily overloaded — please try again later','err.svgRender':'SVG could not be rendered','err.unsupported':'File format not supported ({0}).','err.notLoggedIn':'Not signed in',
+    'changelog.title':'Changelog'
+  }
+};
+// Per-version release notes (rendered in current language).
+const CHANGELOG = [
+  { v:'1.1.0', date:'2026-07-03',
+    de:['Englische Übersetzung & Sprachumschalter (Standard: Englisch für Tim Nichols, sonst Deutsch)','Versionsnummer & Änderungsprotokoll in der App'],
+    en:['English translation & language switcher (default: English for Tim Nichols, German otherwise)','In-app version number & changelog'] },
+  { v:'1.0.0', date:'2026-07-03',
+    de:['Produktions-Release: Anmeldung über Microsoft/Entra','Daten in Supabase mit Prüfprotokoll (statt lokalem Browser-Speicher)','Sicherer Server-Proxy für die KI — kein API-Schlüssel mehr im Browser','OCR-Standardmodell Claude Opus 4.8 (höhere Genauigkeit, hochauflösende Bilderkennung)','Selbstbedienung: Händler & Produkte im Reiter „Stammdaten & Training" pflegen','Tally-, E-Mail- und Excel-Import sowie Zusammenführen'],
+    en:['Production release: sign-in via Microsoft/Entra','Data stored in Supabase with an audit trail (replacing browser-local storage)','Secure server-side AI proxy — no API key in the browser','Default OCR model Claude Opus 4.8 (higher accuracy, high-resolution vision)','Self-service: manage retailers & products in the "Master Data & Training" tab','Tally, email and Excel import plus merge'] }
+];
+
+let LANG = (function(){ try { return localStorage.getItem('kassenbon_lang') || 'de'; } catch(e){ return 'de'; } })();
+function t(key, ...a){ let s = (I18N[LANG] && I18N[LANG][key]) || I18N.de[key] || key; a.forEach((v,i)=>{ s = s.split('{'+i+'}').join(v); }); return s; }
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.getAttribute('data-i18n-ph')); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+  document.documentElement.lang = LANG;
+}
+function updateLangToggle(){ const de=document.getElementById('langDe'), en=document.getElementById('langEn'); if(de&&en){ de.classList.toggle('active', LANG==='de'); en.classList.toggle('active', LANG==='en'); } }
+function setLang(l){ LANG=l; try{ localStorage.setItem('kassenbon_lang', l); }catch(e){} applyI18n(); updateLangToggle(); }
+function openChangelog(){ renderChangelog(); document.getElementById('changelogModal').classList.remove('hidden'); }
+function closeChangelog(){ document.getElementById('changelogModal').classList.add('hidden'); }
+function renderChangelog(){
+  document.getElementById('changelogBody').innerHTML = CHANGELOG.map(c=>
+    `<div class="cl-version">v${c.v}<span class="cl-date">${c.date}</span></div><ul class="cl-list">${(c[LANG]||c.de).map(x=>`<li>${x}</li>`).join('')}</ul>`
+  ).join('');
+}
+// Map a stored German verdict value to a translated display label.
+function verdictLabel(v){
+  const m={'Genehmigt (KI)':'verdict.aiApproved','Genehmigt (Manuell)':'verdict.manualApproved','Duplikat':'verdict.duplicate','Kein Bild':'verdict.noImage','Bereits geprüft':'verdict.alreadyChecked','Abgelehnt':'verdict.rejected'};
+  return m[v] ? t(m[v]) : (v || t('verdict.rejected'));
+}
+
+// ==================== App ====================
 const CFG = window.KASSENBON_CONFIG || {};
 const CONFIGURED = CFG.SUPABASE_URL && !/REPLACE_ME/.test(CFG.SUPABASE_URL || '');
 const sb = CONFIGURED ? window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY) : null;
+// Stored values stay German so logic, dedup and Excel exports remain consistent.
 const HEADERS = ['Eingereicht','Vorname','Nachname','E-Mail','Händler','Datum','Bon-Betrag','3Bears Produkte','Produktpreise','Fingerabdruck','Status','Grund'];
 let currentUser = null, isAdmin = false;
 
 // ---------------- Auth (Entra via Supabase) ----------------
 async function signIn() {
-  if (!sb) { document.getElementById('gateErr').textContent = 'Konfiguration fehlt — config.js befüllen.'; return; }
+  if (!sb) { document.getElementById('gateErr').textContent = t('gate.configMissing'); return; }
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'azure',
     options: { scopes: 'openid email profile', redirectTo: window.location.origin }
@@ -315,12 +433,16 @@ async function signIn() {
 async function signOut() { await sb.auth.signOut(); location.reload(); }
 
 async function initAuth() {
-  if (!sb) { document.getElementById('gate').classList.remove('hidden'); document.getElementById('gateErr').textContent = 'Konfiguration fehlt — bitte config.js mit den Supabase-Daten befüllen.'; return; }
+  if (!sb) { document.getElementById('gate').classList.remove('hidden'); document.getElementById('gateErr').textContent = t('gate.configMissing'); return; }
   let session = null;
   try { session = (await sb.auth.getSession()).data.session; }
-  catch (e) { document.getElementById('gate').classList.remove('hidden'); document.getElementById('gateErr').textContent = 'Verbindung zu Supabase fehlgeschlagen.'; return; }
+  catch (e) { document.getElementById('gate').classList.remove('hidden'); document.getElementById('gateErr').textContent = t('gate.connFailed'); return; }
   if (!session) { document.getElementById('gate').classList.remove('hidden'); return; }
   currentUser = session.user;
+  // Default language per user, unless the user has already chosen one.
+  try {
+    if (!localStorage.getItem('kassenbon_lang')) setLang(currentUser.email === 'tim.nichols@3bears.de' ? 'en' : 'de');
+  } catch(e){}
   document.getElementById('gate').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('userEmail').textContent = currentUser.email || '';
@@ -330,19 +452,22 @@ async function initAuth() {
   isAdmin = me?.role === 'admin';
   if (isAdmin) { document.getElementById('adminTab').classList.remove('hidden'); loadAdminData(); }
 }
+// Initialise UI language + version badge immediately.
+document.getElementById('verBadge').textContent = 'v' + APP_VERSION;
+applyI18n(); updateLangToggle();
 if (sb) sb.auth.onAuthStateChange((_e, s) => { if (s && !currentUser) initAuth(); });
 initAuth();
 
 async function authToken() { const { data: { session } } = await sb.auth.getSession(); return session?.access_token; }
 
-// ---------------- Shared helpers (ported from prototype) ----------------
+// ---------------- Shared helpers ----------------
 function today() { return new Date().toISOString().substring(0,10); }
 function switchTab(name,btn){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');}
 function log(m){const el=document.getElementById('logArea');el.innerHTML+=m+'<br>';el.scrollTop=el.scrollHeight;}
-function verdictBadge(v){if(v==='Genehmigt (KI)')return '<span class="badge badge-green">Genehmigt (KI)</span>';if(v==='Genehmigt (Manuell)')return '<span class="badge badge-blue">Genehmigt (Manuell)</span>';if(v==='Duplikat')return '<span class="badge badge-amber">Duplikat</span>';if(v==='Kein Bild')return '<span class="badge badge-grey">Kein Bild</span>';if(v==='Bereits geprüft')return '<span class="badge badge-grey">Bereits geprüft</span>';return '<span class="badge badge-red">'+(v||'Abgelehnt')+'</span>';}
+function verdictBadge(v){const cls=v==='Genehmigt (KI)'?'badge-green':v==='Genehmigt (Manuell)'?'badge-blue':v==='Duplikat'?'badge-amber':(v==='Kein Bild'||v==='Bereits geprüft')?'badge-grey':'badge-red';return '<span class="badge '+cls+'">'+verdictLabel(v)+'</span>';}
 function isEmailTruncated(e){return !e||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
 
-function friendlyError(rawMsg){if(!rawMsg)return '';const m=String(rawMsg);if(/8000 pixel|image dimensions exceed/i.test(m))return 'Bild zu groß (Auflösung über 8000 px) — wird automatisch verkleinert';if(/file.*too large|zu groß/i.test(m))return 'Datei zu groß — bitte als JPG/PNG unter 15 MB einreichen';if(/network|fetch|cors/i.test(m))return 'Netzwerkfehler — Internetverbindung prüfen und erneut versuchen';if(/rate_limit/i.test(m))return 'API-Limit erreicht — wird automatisch wiederholt';if(/nicht angemeldet|sitzung/i.test(m))return 'Sitzung abgelaufen — bitte neu anmelden';if(/overloaded/i.test(m))return 'KI-Service vorübergehend überlastet — bitte später erneut versuchen';return m.replace(/^(invalid_request_error|api_error|overloaded_error):\s*/i,'').substring(0,120);}
+function friendlyError(rawMsg){if(!rawMsg)return '';const m=String(rawMsg);if(/8000 pixel|image dimensions exceed/i.test(m))return t('err.imageTooBig');if(/file.*too large|zu groß|too large/i.test(m))return t('err.fileTooLarge');if(/network|fetch|cors/i.test(m))return t('err.network');if(/rate_limit/i.test(m))return t('err.rateLimit');if(/nicht angemeldet|sitzung|not signed in|session/i.test(m))return t('err.session');if(/overloaded/i.test(m))return t('err.overloaded');return m.replace(/^(invalid_request_error|api_error|overloaded_error):\s*/i,'').substring(0,120);}
 
 function cleanProductName(raw){if(!raw)return raw;const s=raw.trim();const lo=s.toLowerCase().replace(/[^a-z0-9]/g,'');if(lo.includes('overnoatsbana')||(lo.includes('3bea')&&lo.includes('bana')))return 'Overnight Oats Banana Split 400g';if(lo.includes('overnoatserdbe')||lo.includes('overnoatsedle')||(lo.includes('3bea')&&(lo.includes('erdbe')||lo.includes('edle'))))return 'Overnight Oats Edle Erdbeere 400g';if(/^3bea\.?overn/i.test(s)||/^3beaov/i.test(s)||/^3b\.overn/i.test(s))return 'Overnight Oats 400g';return raw;}
 function dateFromFilename(fn){if(!fn)return '';let m=fn.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return `${m[3]}.${m[2]}.${m[1]}`;m=fn.match(/(\d{4})(\d{2})(\d{2})/);if(m&&+m[2]<=12&&+m[3]<=31)return `${m[3]}.${m[2]}.${m[1]}`;m=fn.match(/(\d{2})[.\-](\d{2})[.\-](\d{4})/);if(m)return `${m[1]}.${m[2]}.${m[3]}`;return '';}
@@ -354,7 +479,7 @@ let tallyFingerprints=new Set(), csvData=[], zipFile=null, emailImages=[];
 let mergeFiles=[], mergedResults=[];
 let stopRequested=false;
 
-function stopVerification(){stopRequested=true;document.getElementById('stopBtn').disabled=true;document.getElementById('stopBtn').textContent='Wird abgebrochen…';log('⏹ Abbruch angefordert — laufendes Bild wird noch fertig geprüft...');}
+function stopVerification(){stopRequested=true;document.getElementById('stopBtn').disabled=true;document.getElementById('stopBtn').textContent=t('cancelling');log(t('log.cancelReq'));}
 
 function rowToArray(r){const p=Array.isArray(r.products)?r.products:[{name:r.product||'–',price:r.product_price||'–'}];return [r.submittedAt||'',r.vorname||'',r.nachname||'',r.email||'',r.retailer||'–',r.date||'–',r.total||'–',p.map(x=>x.name).join(' | '),p.map(x=>x.price||'–').join(' | '),r.fingerprint||'',r.verdict||'',r.reason||''];}
 function exportExcel(data,filename){const wb=XLSX.utils.book_new();const rows=[HEADERS,...data.map(rowToArray)];const ws=XLSX.utils.aoa_to_sheet(rows,{raw:false});ws['!cols']=[12,10,10,25,15,12,10,22,12,22,16].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,'Ergebnisse');XLSX.writeFile(wb,filename+'.xlsx');}
@@ -365,7 +490,7 @@ async function resizeIfNeeded(b64,mediaType){return new Promise(resolve=>{const 
 async function callVerify(base64,mediaType){
   if(mediaType!=='application/pdf'){const r=await resizeIfNeeded(base64,mediaType);base64=r.b64;mediaType=r.mediaType;}
   const token=await authToken();
-  if(!token) throw new Error('Nicht angemeldet');
+  if(!token) throw new Error(t('err.notLoggedIn'));
   const resp=await fetch('/.netlify/functions/verify-receipt',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({base64,mediaType})});
   const d=await resp.json();
   if(!resp.ok) throw new Error(d.error||('HTTP '+resp.status));
@@ -384,10 +509,10 @@ async function saveReceipt(entry){
       fingerprint: entry.fingerprint||null, verdict: entry.verdict||null, reason: entry.reason||null,
       raw_model_json: { products: entry.products||[] }, checked_by: currentUser?.id||null
     }).select('id').single();
-    if(error){ log('⚠ Speichern fehlgeschlagen: '+error.message); return; }
+    if(error){ log(t('log.saveFail', error.message)); return; }
     const prods=(entry.products||[]).map(p=>({receipt_id:data.id,name:p.name,price:p.price}));
     if(prods.length) await sb.from('receipt_products').insert(prods);
-  }catch(e){ log('⚠ Speichern fehlgeschlagen: '+e.message); }
+  }catch(e){ log(t('log.saveFail', e.message)); }
 }
 
 // Load already-checked submissions + approved fingerprints from Supabase.
@@ -406,7 +531,7 @@ async function loadSeen(){
 // ---------------- CSV / files ----------------
 document.getElementById('csvInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{csvData=parseCSV(ev.target.result);document.getElementById('csvLabel').textContent=f.name+' ✓';document.getElementById('csvZone').classList.add('done');checkReady();};r.readAsText(f,'UTF-8');});
 document.getElementById('zipInput').addEventListener('change',e=>{zipFile=e.target.files[0];if(!zipFile)return;document.getElementById('zipLabel').textContent=zipFile.name+' ✓';document.getElementById('zipZone').classList.add('done');checkReady();});
-function checkReady(){const ok=csvData.length>0&&zipFile;document.getElementById('startBtn').disabled=!ok;document.getElementById('readyMsg').textContent=ok?csvData.length+' CSV-Einträge geladen.':'';}
+function checkReady(){const ok=csvData.length>0&&zipFile;document.getElementById('startBtn').disabled=!ok;document.getElementById('readyMsg').textContent=ok?t('msg.csvLoaded',csvData.length):'';}
 function parseCSV(text){const lines=text.trim().split('\n');if(lines.length<2)return[];const h=parseCSVLine(lines[0]);return lines.slice(1).map(l=>{const v=parseCSVLine(l),o={};h.forEach((k,i)=>o[k.trim().replace(/^﻿/,'')]=(v[i]||'').trim());return o;}).filter(r=>Object.values(r).some(v=>v));}
 function parseCSVLine(line){const r=[];let c='',q=false;for(let i=0;i<line.length;i++){if(line[i]==='"'){q=!q;}else if(line[i]===','&&!q){r.push(c);c='';}else{c+=line[i];}}r.push(c);return r;}
 function arrayBufferToBase64(buffer){const bytes=new Uint8Array(buffer);const cs=0x8000;let res='';for(let i=0;i<bytes.length;i+=cs){res+=String.fromCharCode.apply(null,bytes.subarray(i,i+cs));}return btoa(res);}
@@ -423,7 +548,7 @@ async function fileToBase64AndType(file){const ext=(file.name.toLowerCase().matc
 async function startVerification(){
   document.getElementById('startBtn').disabled=true;
   document.getElementById('progressCard').style.display='block';
-  document.getElementById('stopBtn').disabled=false;document.getElementById('stopBtn').textContent='⏹ Abbrechen';document.getElementById('stopBtn').style.display='';
+  document.getElementById('stopBtn').disabled=false;document.getElementById('stopBtn').textContent=t('btn.cancel');document.getElementById('stopBtn').style.display='';
   document.getElementById('resultsSection').style.display='none';
   document.getElementById('tallyBody').innerHTML='';document.getElementById('logArea').innerHTML='';
   tallyResults=[];tallyFingerprints=new Set();stopRequested=false;
@@ -432,17 +557,17 @@ async function startVerification(){
 
   const zip=await JSZip.loadAsync(zipFile);
   const imgs=Object.keys(zip.files).filter(n=>/\.(jpg|jpeg|png|gif|webp|pdf|svg)$/i.test(n)&&!zip.files[n].dir);
-  log('ZIP: '+imgs.length+' Bilder. CSV: '+csvData.length+' Einträge.');
+  log(t('log.zipCsv', imgs.length, csvData.length));
 
   function slugifyFilename(raw){if(!raw)return '';try{let name=raw.split('/').pop().split('?')[0];name=name.replace(/\+/g,' ');name=decodeURIComponent(name);name=name.toLowerCase().trim();name=name.replace(/\s*\(\d+\)\s*/g,'');name=name.replace(/\s+/g,'-');return name;}catch(e){return raw.toLowerCase().trim().replace(/\s+/g,'-');}}
   const csvLookup={};
   for(const row of csvData){const u=row['Kassenbon hochladen']||'';if(u){const k=slugifyFilename(u);if(k)csvLookup[k]=row;}}
 
   for(let i=0;i<imgs.length;i++){
-    if(stopRequested){document.getElementById('progressText').textContent='Prüfung abgebrochen nach '+i+' von '+imgs.length+' Bildern.';log('⏹ Prüfung abgebrochen. '+tallyResults.length+' Einträge verarbeitet.');break;}
+    if(stopRequested){document.getElementById('progressText').textContent=t('progress.cancelled', i, imgs.length);log(t('log.cancelled', tallyResults.length));break;}
     const imgName=imgs[i];
     document.getElementById('progressFill').style.width=Math.round((i+1)/imgs.length*100)+'%';
-    document.getElementById('progressText').textContent='Prüfe Bild '+(i+1)+' von '+imgs.length+': '+imgName;
+    document.getElementById('progressText').textContent=t('progress.checking', i+1, imgs.length, imgName);
     const imgSlug=slugifyFilename(imgName);const imgSlugBase=imgSlug.replace(/\.[^.]+$/,'');
     let row=csvLookup[imgSlug]||csvLookup[Object.keys(csvLookup).find(k=>k===imgSlugBase)||'']||null;
     if(!row){const key=Object.keys(csvLookup).find(k=>k.length>6&&(k.includes(imgSlugBase)||imgSlugBase.includes(k.replace(/\.[^.]+$/,''))));if(key)row=csvLookup[key];}
@@ -453,31 +578,31 @@ async function startVerification(){
     const submittedAtRaw=csvCol(row,'submitted at','submittedat','eingereicht');
     const submittedAt=submittedAtRaw||(!row?dateFromFilename(imgName):'');
     const submissionId=row?csvCol(row,'submission id','submissionid')||(email+'_'+submittedAtRaw):imgName;
-    if(!row)log('⚠ Kein CSV-Eintrag für: '+imgName+' — wird trotzdem geprüft.');
+    if(!row)log(t('log.noCsv', imgName));
 
     let b64=null,mt='image/jpeg',loadError=null;
     try{
       const rawBuffer=await zip.files[imgName].async('arraybuffer');const raw=rawBuffer.slice(0);
-      if(raw.byteLength>15*1024*1024){loadError='Datei zu groß ('+Math.round(raw.byteLength/1024/1024*10)/10+' MB)';log('⚠ '+loadError+': '+imgName);}
+      if(raw.byteLength>15*1024*1024){loadError=t('err.tooLargeMb', Math.round(raw.byteLength/1024/1024*10)/10);log('⚠ '+loadError+': '+imgName);}
       else{const ext=(imgName.toLowerCase().match(/\.([^.]+)$/)||['','jpg'])[1];
-        if(ext==='pdf'){const r=await pdfToBase64(raw);b64=r.b64;mt='image/jpeg';log('Bild: '+imgName+' (PDF→JPG)');}
-        else if(ext==='svg'){const t=new TextDecoder().decode(raw);const blob=new Blob([t],{type:'image/svg+xml'});const url=URL.createObjectURL(blob);await new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=img.naturalWidth||800;c.height=img.naturalHeight||1200;c.getContext('2d').drawImage(img,0,0);b64=c.toDataURL('image/jpeg',0.92).split(',')[1];mt='image/jpeg';URL.revokeObjectURL(url);res();};img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('SVG konnte nicht gerendert werden'));};img.src=url;});log('Bild: '+imgName+' (SVG→JPG)');}
-        else{b64=arrayBufferToBase64(raw);mt=ext==='png'?'image/png':ext==='webp'?'image/webp':ext==='gif'?'image/gif':'image/jpeg';log('Bild: '+imgName);}
+        if(ext==='pdf'){const r=await pdfToBase64(raw);b64=r.b64;mt='image/jpeg';log(t('log.imagePdf', imgName));}
+        else if(ext==='svg'){const txt=new TextDecoder().decode(raw);const blob=new Blob([txt],{type:'image/svg+xml'});const url=URL.createObjectURL(blob);await new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');c.width=img.naturalWidth||800;c.height=img.naturalHeight||1200;c.getContext('2d').drawImage(img,0,0);b64=c.toDataURL('image/jpeg',0.92).split(',')[1];mt='image/jpeg';URL.revokeObjectURL(url);res();};img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error(t('err.svgRender')));};img.src=url;});log(t('log.imageSvg', imgName));}
+        else{b64=arrayBufferToBase64(raw);mt=ext==='png'?'image/png':ext==='webp'?'image/webp':ext==='gif'?'image/gif':'image/jpeg';log(t('log.image', imgName));}
       }
-    }catch(e){loadError=friendlyError(e.message);log('⚠ Fehler beim Laden: '+imgName+' — '+e.message);}
+    }catch(e){loadError=friendlyError(e.message);log(t('log.loadErr', imgName, e.message));}
 
     let res={retailer:'–',date:'–',total:'–',products:[{name:'–',price:'–'}],verdict:'Abgelehnt',fingerprint:'',reason:''};
     let wasSkipped=false;
     const seenEntry=seen[submissionId];
     if(skipSeen&&seenEntry&&submissionId&&submissionId!==imgName){
       res={retailer:seenEntry.retailer,date:seenEntry.receipt_date,total:seenEntry.total,products:(seenEntry.raw_model_json?.products)||[{name:'–',price:'–'}],fingerprint:seenEntry.fingerprint,reason:friendlyError(seenEntry.reason),verdict:'Bereits geprüft'};
-      wasSkipped=true;log('⏭ Übersprungen (bereits geprüft): '+submissionId);
-    } else if(loadError){res.verdict='Abgelehnt';res.reason=loadError;res.products=[{name:'Datei nicht ladbar',price:'–'}];}
-    else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.reason=friendlyError(e.message);res.products=[{name:'Prüfung fehlgeschlagen',price:'–'}];log('API-Fehler: '+e.message);}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';}
+      wasSkipped=true;log(t('log.skipped', submissionId));
+    } else if(loadError){res.verdict='Abgelehnt';res.reason=loadError;res.products=[{name:t('prod.notLoadable'),price:'–'}];}
+    else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.reason=friendlyError(e.message);res.products=[{name:t('prod.checkFailed'),price:'–'}];log(t('log.apiErr', e.message));}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';}
 
     const fp=res.fingerprint;
     if(!wasSkipped){
-      if(fp&&tallyFingerprints.has(fp)){res.verdict='Duplikat';log('Duplikat: '+fp);}
+      if(fp&&tallyFingerprints.has(fp)){res.verdict='Duplikat';log(t('log.duplicate', fp));}
       else if(fp&&res.verdict==='Genehmigt (KI)'){tallyFingerprints.add(fp);}
       await saveReceipt({source:'tally',submissionId,submittedAt,vorname,nachname,email,...res});
     }
@@ -487,7 +612,7 @@ async function startVerification(){
     tallyResults.push(entry);
     const p=Array.isArray(entry.products)?entry.products:[{name:'–',price:'–'}];
     const tr=document.createElement('tr');
-    const emailDisplay=entry.email?`<td style="font-size:0.8rem;">${entry.email}</td>`:entry.csvMatched?`<td>–</td>`:`<td><span class="badge badge-amber" title="Kein CSV-Eintrag.">⚠ Kein CSV-Eintrag</span></td>`;
+    const emailDisplay=entry.email?`<td style="font-size:0.8rem;">${entry.email}</td>`:entry.csvMatched?`<td>–</td>`:`<td><span class="badge badge-amber" title="${t('badge.noCsvTitle')}">${t('badge.noCsv')}</span></td>`;
     tr.innerHTML=`<td>${displayDate}</td><td>${entry.vorname||'–'}</td><td>${entry.nachname||'–'}</td>${emailDisplay}<td>${entry.retailer}</td><td>${entry.date}</td><td>${entry.total}</td><td>${p.map(x=>x.name).join('<br>')}</td><td>${p.map(x=>x.price||'–').join('<br>')}</td><td><span class="fingerprint" title="${entry.fingerprint}">${entry.fingerprint||'–'}</span></td><td>${verdictBadge(entry.verdict)}</td><td class="error-text">${entry.reason||''}</td>`;
     document.getElementById('tallyBody').appendChild(tr);
     document.getElementById('resultsSection').style.display='block';
@@ -498,7 +623,7 @@ async function startVerification(){
     document.getElementById('statSkipped').textContent=tallyResults.filter(r=>r.verdict==='Bereits geprüft').length;
     if(!wasSkipped) await new Promise(r=>setTimeout(r,2500));
   }
-  if(!stopRequested){document.getElementById('progressText').textContent='Prüfung abgeschlossen. '+imgs.length+' Bilder geprüft.';log('Fertig. '+tallyResults.length+' Einträge geprüft.');}
+  if(!stopRequested){document.getElementById('progressText').textContent=t('progress.done', imgs.length);log(t('log.finished', tallyResults.length));}
   document.getElementById('stopBtn').style.display='none';document.getElementById('startBtn').disabled=false;
 }
 
@@ -507,11 +632,11 @@ document.getElementById('emailImgInput').addEventListener('change',e=>loadEmailI
 document.getElementById('emailDrop').addEventListener('dragover',e=>{e.preventDefault();e.currentTarget.classList.add('dragover');});
 document.getElementById('emailDrop').addEventListener('dragleave',e=>e.currentTarget.classList.remove('dragover'));
 document.getElementById('emailDrop').addEventListener('drop',e=>{e.preventDefault();e.currentTarget.classList.remove('dragover');loadEmailImages(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')||f.type==='application/pdf'||/\.(pdf|svg)$/i.test(f.name)));});
-function loadEmailImages(files){emailImages=files;const rows=document.getElementById('emailRows');rows.innerHTML='';files.forEach((f,i)=>{const url=URL.createObjectURL(f);const div=document.createElement('div');div.className='img-row';div.innerHTML=`<img src="${url}" class="img-thumb"><div style="font-size:0.8rem;color:#888;min-width:100px;">${f.name}</div><div class="img-fields"><input type="text" placeholder="Vorname" id="ef-vn-${i}"><input type="text" placeholder="Nachname" id="ef-nn-${i}"><input type="email" placeholder="E-Mail" id="ef-em-${i}"></div><div class="img-status" id="es-${i}"></div>`;rows.appendChild(div);});document.getElementById('emailImgList').style.display=files.length>0?'block':'none';}
-async function runEmailVerification(){const btn=document.getElementById('emailVerifyBtn');btn.disabled=true;btn.textContent='Prüfung läuft...';emailResults=[];const {fps}=await loadSeen();for(let i=0;i<emailImages.length;i++){const f=emailImages[i];const vorname=document.getElementById('ef-vn-'+i).value.trim();const nachname=document.getElementById('ef-nn-'+i).value.trim();const email=document.getElementById('ef-em-'+i).value.trim();document.getElementById('es-'+i).innerHTML='<span style="color:#888;font-size:0.8rem;">Prüfe...</span>';const {base64:b64,mediaType:mt,unsupported}=await fileToBase64AndType(f);let res={retailer:'–',date:'–',total:'–',products:[{name:'Nicht gefunden',price:'–'}],verdict:'Abgelehnt',fingerprint:'',reason:''};if(unsupported){res.reason='Dateiformat nicht unterstützt ('+unsupported+').';}else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.reason=friendlyError(e.message);}}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';if(res.fingerprint&&fps.has(res.fingerprint)){res.verdict='Duplikat';}else if(res.fingerprint&&res.verdict==='Genehmigt (KI)'){fps.add(res.fingerprint);}const entry={source:'email',submittedAt:'',vorname,nachname,email,...res};emailResults.push(entry);if(res.verdict!=='Duplikat')await saveReceipt(entry);document.getElementById('es-'+i).innerHTML=verdictBadge(res.verdict);const p=Array.isArray(entry.products)?entry.products:[{name:'–',price:'–'}];const tr=document.createElement('tr');tr.innerHTML=`<td>${entry.vorname}</td><td>${entry.nachname}</td><td style="font-size:0.8rem;">${entry.email}</td><td>${entry.retailer}</td><td>${entry.date}</td><td>${entry.total}</td><td>${p.map(x=>x.name).join('<br>')}</td><td>${p.map(x=>x.price||'–').join('<br>')}</td><td><span class="fingerprint">${entry.fingerprint||'–'}</span></td><td>${verdictBadge(entry.verdict)}</td>`;document.getElementById('emailBody').appendChild(tr);}document.getElementById('emailResultsSection').style.display='block';btn.disabled=false;btn.textContent='Alle prüfen';}
+function loadEmailImages(files){emailImages=files;const rows=document.getElementById('emailRows');rows.innerHTML='';files.forEach((f,i)=>{const url=URL.createObjectURL(f);const div=document.createElement('div');div.className='img-row';div.innerHTML=`<img src="${url}" class="img-thumb"><div style="font-size:0.8rem;color:#888;min-width:100px;">${f.name}</div><div class="img-fields"><input type="text" placeholder="${t('ph.firstName')}" id="ef-vn-${i}"><input type="text" placeholder="${t('ph.lastName')}" id="ef-nn-${i}"><input type="email" placeholder="${t('ph.email')}" id="ef-em-${i}"></div><div class="img-status" id="es-${i}"></div>`;rows.appendChild(div);});document.getElementById('emailImgList').style.display=files.length>0?'block':'none';}
+async function runEmailVerification(){const btn=document.getElementById('emailVerifyBtn');btn.disabled=true;btn.textContent=t('btn.checking');emailResults=[];const {fps}=await loadSeen();for(let i=0;i<emailImages.length;i++){const f=emailImages[i];const vorname=document.getElementById('ef-vn-'+i).value.trim();const nachname=document.getElementById('ef-nn-'+i).value.trim();const email=document.getElementById('ef-em-'+i).value.trim();document.getElementById('es-'+i).innerHTML='<span style="color:#888;font-size:0.8rem;">'+t('status.checking')+'</span>';const {base64:b64,mediaType:mt,unsupported}=await fileToBase64AndType(f);let res={retailer:'–',date:'–',total:'–',products:[{name:t('prod.notFound'),price:'–'}],verdict:'Abgelehnt',fingerprint:'',reason:''};if(unsupported){res.reason=t('err.unsupported', unsupported);}else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.reason=friendlyError(e.message);}}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';if(res.fingerprint&&fps.has(res.fingerprint)){res.verdict='Duplikat';}else if(res.fingerprint&&res.verdict==='Genehmigt (KI)'){fps.add(res.fingerprint);}const entry={source:'email',submittedAt:'',vorname,nachname,email,...res};emailResults.push(entry);if(res.verdict!=='Duplikat')await saveReceipt(entry);document.getElementById('es-'+i).innerHTML=verdictBadge(res.verdict);const p=Array.isArray(entry.products)?entry.products:[{name:'–',price:'–'}];const tr=document.createElement('tr');tr.innerHTML=`<td>${entry.vorname}</td><td>${entry.nachname}</td><td style="font-size:0.8rem;">${entry.email}</td><td>${entry.retailer}</td><td>${entry.date}</td><td>${entry.total}</td><td>${p.map(x=>x.name).join('<br>')}</td><td>${p.map(x=>x.price||'–').join('<br>')}</td><td><span class="fingerprint">${entry.fingerprint||'–'}</span></td><td>${verdictBadge(entry.verdict)}</td>`;document.getElementById('emailBody').appendChild(tr);}document.getElementById('emailResultsSection').style.display='block';btn.disabled=false;btn.textContent=t('email.checkAll');}
 
 // ---------------- Tab 3: Excel import ----------------
-document.getElementById('excelImportInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;document.getElementById('excelImportLabel').textContent=f.name+' ✓';document.getElementById('excelImportZone').classList.add('done');const buf=await f.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});let ws=null;for(const name of wb.SheetNames){const d=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1});if((d[0]||[]).some(h=>String(h||'').toLowerCase().includes('vorname'))){ws=wb.Sheets[name];break;}}if(!ws){alert('Kein passendes Tabellenblatt gefunden.');return;}const data=XLSX.utils.sheet_to_json(ws,{header:1});const hdrs=data[0].map(h=>String(h||'').trim().toLowerCase());const ci=k=>hdrs.findIndex(h=>h.includes(k));const iV=ci('vorname'),iN=ci('nachname'),iE=hdrs.findIndex(h=>h.includes('mail')),iP=ci('produkt'),iPr=ci('preis'),iH=hdrs.findIndex(h=>h.includes('handel')||h.includes('einzel')),iD=ci('datum');excelImportResults=[];let flags=0;const tbody=document.getElementById('excelImportBody');tbody.innerHTML='';for(let i=1;i<data.length;i++){const row=data[i];const vn=String(row[iV]||'').trim(),nn=String(row[iN]||'').trim();if(!vn&&!nn)continue;const em=String(row[iE]||'').trim();const prod=String(row[iP]||'').trim();const preis=iPr>=0?String(row[iPr]||'').trim():'–';const haendler=iH>=0?String(row[iH]||'').trim():'–';const datum=formatDate(iD>=0?String(row[iD]||'').trim():'–');const trunc=isEmailTruncated(em);if(trunc&&em)flags++;const entry={source:'excel',submittedAt:datum,vorname:vn,nachname:nn,email:em,retailer:haendler,date:datum,total:'–',products:[{name:prod,price:preis}],fingerprint:'',verdict:'Genehmigt (Manuell)'};excelImportResults.push(entry);await saveReceipt(entry);const tr=document.createElement('tr');const ec=trunc&&em?`<td><span class="flag-email" title="E-Mail unvollständig">⚠ ${em}</span></td>`:`<td style="font-size:0.8rem;">${em||'–'}</td>`;tr.innerHTML=`<td>${datum||'–'}</td><td>${vn}</td><td>${nn}</td>${ec}<td>${haendler||'–'}</td><td>${prod||'–'}</td><td>${preis||'–'}</td><td>${verdictBadge('Genehmigt (Manuell)')}</td>`;tbody.appendChild(tr);}document.getElementById('excelFlagMsg').textContent=flags>0?'⚠ '+flags+' unvollständige E-Mail-Adressen':'';document.getElementById('excelImportResults').style.display='block';});
+document.getElementById('excelImportInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;document.getElementById('excelImportLabel').textContent=f.name+' ✓';document.getElementById('excelImportZone').classList.add('done');const buf=await f.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});let ws=null;for(const name of wb.SheetNames){const d=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1});if((d[0]||[]).some(h=>String(h||'').toLowerCase().includes('vorname'))){ws=wb.Sheets[name];break;}}if(!ws){alert(t('excel.noSheet'));return;}const data=XLSX.utils.sheet_to_json(ws,{header:1});const hdrs=data[0].map(h=>String(h||'').trim().toLowerCase());const ci=k=>hdrs.findIndex(h=>h.includes(k));const iV=ci('vorname'),iN=ci('nachname'),iE=hdrs.findIndex(h=>h.includes('mail')),iP=ci('produkt'),iPr=ci('preis'),iH=hdrs.findIndex(h=>h.includes('handel')||h.includes('einzel')),iD=ci('datum');excelImportResults=[];let flags=0;const tbody=document.getElementById('excelImportBody');tbody.innerHTML='';for(let i=1;i<data.length;i++){const row=data[i];const vn=String(row[iV]||'').trim(),nn=String(row[iN]||'').trim();if(!vn&&!nn)continue;const em=String(row[iE]||'').trim();const prod=String(row[iP]||'').trim();const preis=iPr>=0?String(row[iPr]||'').trim():'–';const haendler=iH>=0?String(row[iH]||'').trim():'–';const datum=formatDate(iD>=0?String(row[iD]||'').trim():'–');const trunc=isEmailTruncated(em);if(trunc&&em)flags++;const entry={source:'excel',submittedAt:datum,vorname:vn,nachname:nn,email:em,retailer:haendler,date:datum,total:'–',products:[{name:prod,price:preis}],fingerprint:'',verdict:'Genehmigt (Manuell)'};excelImportResults.push(entry);await saveReceipt(entry);const tr=document.createElement('tr');const ec=trunc&&em?`<td><span class="flag-email" title="${t('email.incomplete')}">⚠ ${em}</span></td>`:`<td style="font-size:0.8rem;">${em||'–'}</td>`;tr.innerHTML=`<td>${datum||'–'}</td><td>${vn}</td><td>${nn}</td>${ec}<td>${haendler||'–'}</td><td>${prod||'–'}</td><td>${preis||'–'}</td><td>${verdictBadge('Genehmigt (Manuell)')}</td>`;tbody.appendChild(tr);}document.getElementById('excelFlagMsg').textContent=flags>0?t('excel.flag', flags):'';document.getElementById('excelImportResults').style.display='block';});
 
 // ---------------- Tab 4: Merge ----------------
 document.getElementById('mergeInput').addEventListener('change',e=>addMergeFiles(Array.from(e.target.files)));
@@ -519,9 +644,9 @@ document.getElementById('mergeDrop').addEventListener('dragover',e=>{e.preventDe
 document.getElementById('mergeDrop').addEventListener('dragleave',e=>e.currentTarget.classList.remove('dragover'));
 document.getElementById('mergeDrop').addEventListener('drop',e=>{e.preventDefault();e.currentTarget.classList.remove('dragover');addMergeFiles(Array.from(e.dataTransfer.files).filter(f=>f.name.endsWith('.xlsx')));});
 function addMergeFiles(files){files.forEach(f=>{if(!mergeFiles.find(x=>x.name===f.name))mergeFiles.push(f);});renderChips();}
-function renderChips(){document.getElementById('fileChips').innerHTML=mergeFiles.map((f,i)=>`<div class="chip">${f.name}<button onclick="removeFile(${i})">×</button></div>`).join('');document.getElementById('mergeBtn').disabled=mergeFiles.length<1;document.getElementById('mergeMsg').textContent=mergeFiles.length>0?mergeFiles.length+' Datei(en) bereit.':'';}
+function renderChips(){document.getElementById('fileChips').innerHTML=mergeFiles.map((f,i)=>`<div class="chip">${f.name}<button onclick="removeFile(${i})">×</button></div>`).join('');document.getElementById('mergeBtn').disabled=mergeFiles.length<1;document.getElementById('mergeMsg').textContent=mergeFiles.length>0?t('merge.filesReady', mergeFiles.length):'';}
 function removeFile(i){mergeFiles.splice(i,1);renderChips();}
-async function runMerge(){document.getElementById('mergeBtn').disabled=true;document.getElementById('mergeMsg').textContent='Wird zusammengeführt...';const all=[];for(const f of mergeFiles){const buf=await f.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];XLSX.utils.sheet_to_json(ws,{header:1}).slice(1).filter(r=>r.some(c=>c)).forEach(r=>all.push(r));}const seen=new Set();mergedResults=[];for(const r of all){const k=(r[3]||'')+'|'+(r[0]||'')+'|'+(r[9]||'');if(!seen.has(k)){seen.add(k);mergedResults.push(r);}}mergedResults.sort((a,b)=>String(b[0]).localeCompare(String(a[0])));const tbody=document.getElementById('mergeBody');tbody.innerHTML='';mergedResults.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=HEADERS.slice(0,11).map((h,i)=>{if(i===10)return`<td>${verdictBadge(r[i]||'')}</td>`;if(i===9)return`<td><span class="fingerprint" title="${r[i]||''}">${r[i]||'–'}</span></td>`;return`<td>${r[i]||'–'}</td>`;}).join('');tbody.appendChild(tr);});const ki=mergedResults.filter(r=>r[10]==='Genehmigt (KI)').length;const man=mergedResults.filter(r=>r[10]==='Genehmigt (Manuell)').length;const rej=mergedResults.filter(r=>r[10]==='Abgelehnt').length;const dup=mergedResults.filter(r=>r[10]==='Duplikat').length;const rem=all.length-mergedResults.length;document.getElementById('mergeSummary').innerHTML=`<strong>${mergedResults.length}</strong> eindeutige Einträge aus <strong>${mergeFiles.length}</strong> Dateien &nbsp;·&nbsp; <span style="color:#1a6b3a">${ki} Genehmigt (KI)</span> &nbsp;·&nbsp; <span style="color:#1a56a3">${man} Genehmigt (Manuell)</span> &nbsp;·&nbsp; <span style="color:#a32d2d">${rej} Abgelehnt</span> &nbsp;·&nbsp; <span style="color:#8a5c00">${dup} Duplikat</span>`+(rem>0?` &nbsp;·&nbsp; <span style="color:#888">${rem} Duplikate entfernt</span>`:'');document.getElementById('mergeResultCard').style.display='block';document.getElementById('mergeBtn').disabled=false;document.getElementById('mergeMsg').textContent='Fertig.';}
+async function runMerge(){document.getElementById('mergeBtn').disabled=true;document.getElementById('mergeMsg').textContent=t('merge.merging');const all=[];for(const f of mergeFiles){const buf=await f.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});const ws=wb.Sheets[wb.SheetNames[0]];XLSX.utils.sheet_to_json(ws,{header:1}).slice(1).filter(r=>r.some(c=>c)).forEach(r=>all.push(r));}const seen=new Set();mergedResults=[];for(const r of all){const k=(r[3]||'')+'|'+(r[0]||'')+'|'+(r[9]||'');if(!seen.has(k)){seen.add(k);mergedResults.push(r);}}mergedResults.sort((a,b)=>String(b[0]).localeCompare(String(a[0])));const tbody=document.getElementById('mergeBody');tbody.innerHTML='';mergedResults.forEach(r=>{const tr=document.createElement('tr');tr.innerHTML=HEADERS.slice(0,11).map((h,i)=>{if(i===10)return`<td>${verdictBadge(r[i]||'')}</td>`;if(i===9)return`<td><span class="fingerprint" title="${r[i]||''}">${r[i]||'–'}</span></td>`;return`<td>${r[i]||'–'}</td>`;}).join('');tbody.appendChild(tr);});const ki=mergedResults.filter(r=>r[10]==='Genehmigt (KI)').length;const man=mergedResults.filter(r=>r[10]==='Genehmigt (Manuell)').length;const rej=mergedResults.filter(r=>r[10]==='Abgelehnt').length;const dup=mergedResults.filter(r=>r[10]==='Duplikat').length;const rem=all.length-mergedResults.length;document.getElementById('mergeSummary').innerHTML=t('merge.uniqueEntries', mergedResults.length, mergeFiles.length)+` &nbsp;·&nbsp; <span style="color:#1a6b3a">${ki} ${t('verdict.aiApproved')}</span> &nbsp;·&nbsp; <span style="color:#1a56a3">${man} ${t('verdict.manualApproved')}</span> &nbsp;·&nbsp; <span style="color:#a32d2d">${rej} ${t('verdict.rejected')}</span> &nbsp;·&nbsp; <span style="color:#8a5c00">${dup} ${t('verdict.duplicate')}</span>`+(rem>0?` &nbsp;·&nbsp; <span style="color:#888">${t('merge.removed', rem)}</span>`:'');document.getElementById('mergeResultCard').style.display='block';document.getElementById('mergeBtn').disabled=false;document.getElementById('mergeMsg').textContent=t('merge.done');}
 function exportMerged(){const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet([HEADERS,...mergedResults],{raw:false});ws['!cols']=[12,10,10,25,15,12,10,22,12,22,16].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,'Ergebnisse');XLSX.writeFile(wb,'3Bears_Kassenbon_Master_'+today()+'.xlsx');}
 
 // ---------------- Tab 5: Admin (Stammdaten & Training) ----------------
@@ -530,26 +655,26 @@ async function loadAdminData(){
   const { data: rets } = await sb.from('retailers').select('id,name,aliases,eligible').order('name');
   adminRetailerList=rets||[];
   document.getElementById('adminRetailers').innerHTML=(rets||[]).map(r=>`<tr><td>${r.name}</td><td style="font-size:0.8rem;color:#666;">${(r.aliases||[]).join(', ')}</td><td>${r.eligible?'✓':'—'}</td></tr>`).join('');
-  const sel=document.getElementById('pRetailer');sel.innerHTML='<option value="">Allgemein (alle Händler)</option>'+(rets||[]).map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  const sel=document.getElementById('pRetailer');sel.innerHTML=`<option value="">${t('admin.generalOption')}</option>`+(rets||[]).map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
   const { data: prods } = await sb.from('products').select('canonical_name,variants,retailers(name)').order('canonical_name');
-  document.getElementById('adminProducts').innerHTML=(prods||[]).map(p=>`<tr><td>${p.canonical_name}</td><td>${p.retailers?.name||'Allgemein'}</td><td style="font-size:0.8rem;color:#666;">${(p.variants||[]).join(', ')}</td></tr>`).join('');
+  document.getElementById('adminProducts').innerHTML=(prods||[]).map(p=>`<tr><td>${p.canonical_name}</td><td>${p.retailers?.name||t('admin.general')}</td><td style="font-size:0.8rem;color:#666;">${(p.variants||[]).join(', ')}</td></tr>`).join('');
 }
 async function addRetailer(){
   const name=document.getElementById('rName').value.trim();
   const aliases=document.getElementById('rAliases').value.split(',').map(s=>s.trim()).filter(Boolean);
   const eligible=document.getElementById('rEligible').checked;
-  if(!name){document.getElementById('rMsg').textContent='Bitte einen Namen eingeben.';return;}
+  if(!name){document.getElementById('rMsg').textContent=t('admin.needName');return;}
   const { error }=await sb.from('retailers').insert({name,aliases,eligible,created_by:currentUser.id});
-  document.getElementById('rMsg').textContent=error?('Fehler: '+error.message):('✓ '+name+' gespeichert.');
+  document.getElementById('rMsg').textContent=error?t('admin.error', error.message):t('admin.saved', name);
   if(!error){document.getElementById('rName').value='';document.getElementById('rAliases').value='';loadAdminData();}
 }
 async function addProduct(){
   const canonical_name=document.getElementById('pName').value.trim();
   const retailer_id=document.getElementById('pRetailer').value||null;
   const variants=document.getElementById('pVariants').value.split(',').map(s=>s.trim()).filter(Boolean);
-  if(!canonical_name){document.getElementById('pMsg').textContent='Bitte einen Produktnamen eingeben.';return;}
+  if(!canonical_name){document.getElementById('pMsg').textContent=t('admin.needProduct');return;}
   const { error }=await sb.from('products').insert({canonical_name,retailer_id,variants,created_by:currentUser.id});
-  document.getElementById('pMsg').textContent=error?('Fehler: '+error.message):('✓ '+canonical_name+' gespeichert.');
+  document.getElementById('pMsg').textContent=error?t('admin.error', error.message):t('admin.saved', canonical_name);
   if(!error){document.getElementById('pName').value='';document.getElementById('pVariants').value='';loadAdminData();}
 }
 </script>
