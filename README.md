@@ -4,6 +4,14 @@ Receipt-verification tool for the 3Bears Gewinnspiel. Team uploads receipts (Tal
 export, email attachments, or manual), Claude OCR-checks each one against the eligible
 retailers + 3Bears products, results are stored in Supabase with a full audit trail.
 
+> **🟢 Live:** https://kassenbon-tool.netlify.app · deploys automatically from `main`.
+> Supersedes the old v33 prototype (decommissioned).
+
+**Documentation**
+- [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — for the team using the tool
+- [docs/MAINTENANCE.md](docs/MAINTENANCE.md) — admin & ops runbook (deploys, env vars, admins, keys, troubleshooting)
+- This README — first-time setup (below)
+
 Production hardening vs. the v33 prototype:
 - **No API key in the browser** — Claude is called only via the `verify-receipt` Netlify Function.
 - **Entra (Microsoft) login** — only signed-in 3Bears users can open the tool or spend API credit.
