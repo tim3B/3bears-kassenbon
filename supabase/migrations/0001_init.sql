@@ -80,7 +80,7 @@ create table if not exists public.receipts (
   receipt_date   text,                      -- as printed on the Bon (DD.MM.YYYY / "Unbekannt")
   total          text,
   fingerprint    text,                      -- retailer|date|total for duplicate detection
-  verdict        text,                      -- Genehmigt (KI) / Genehmigt (Manuell) / Abgelehnt / Duplikat
+  verdict        text,                      -- Genehmigt (KI) / Genehmigt (Manuell) / Abgelehnt / Duplikat / Fehler
   reason         text,
   raw_model_json jsonb,                     -- full model response for audit
   checked_by     uuid references auth.users(id),
