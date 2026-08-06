@@ -350,9 +350,9 @@ const I18N = {
     'prod.notLoadable':'Datei nicht ladbar','prod.checkFailed':'Prüfung fehlgeschlagen','prod.notFound':'Nicht gefunden',
     'badge.noCsv':'⚠ Kein CSV-Eintrag','badge.noCsvTitle':'Kein CSV-Eintrag.',
     'msg.csvLoaded':'{0} CSV-Einträge geladen.',
-    'progress.checking':'Prüfe Bild {0} von {1}: {2}','progress.done':'Prüfung abgeschlossen. {0} Bilder geprüft.','progress.cancelled':'Prüfung abgebrochen nach {0} von {1} Bildern.',
-    'log.zipCsv':'ZIP: {0} Bilder. CSV: {1} Einträge.','log.noCsv':'⚠ Kein CSV-Eintrag für: {0} — wird trotzdem geprüft.','log.image':'Bild: {0}','log.imagePdf':'Bild: {0} (PDF→JPG)','log.imageSvg':'Bild: {0} (SVG→JPG)','log.skipped':'⏭ Übersprungen (bereits geprüft): {0}','log.duplicate':'Duplikat: {0}','log.cancelReq':'⏹ Abbruch angefordert — laufendes Bild wird noch fertig geprüft...','log.cancelled':'⏹ Prüfung abgebrochen. {0} Einträge verarbeitet.','log.finished':'Fertig. {0} Einträge geprüft.','log.loadErr':'⚠ Fehler beim Laden: {0} — {1}','log.apiErr':'API-Fehler: {0}','log.saveFail':'⚠ Speichern fehlgeschlagen: {0}',
-    'err.imageTooBig':'Bild zu groß (Auflösung über 8000 px) — wird automatisch verkleinert','err.fileTooLarge':'Datei zu groß — bitte als JPG/PNG unter 15 MB einreichen','err.tooLargeMb':'Datei zu groß ({0} MB)','err.network':'Netzwerkfehler — Internetverbindung prüfen und erneut versuchen','err.rateLimit':'API-Limit erreicht — wird automatisch wiederholt','err.session':'Sitzung abgelaufen — bitte neu anmelden','err.overloaded':'KI-Service vorübergehend überlastet — bitte später erneut versuchen','err.svgRender':'SVG konnte nicht gerendert werden','err.unsupported':'Dateiformat nicht unterstützt ({0}).','err.notLoggedIn':'Nicht angemeldet',
+    'progress.checking':'Prüfe Bild {0} von {1}: {2}','progress.done':'Prüfung abgeschlossen. {0} Bilder geprüft.','progress.cancelled':'Prüfung abgebrochen nach {0} von {1} Bildern.','progress.loadingSeen':'Bereits geprüfte Einreichungen werden geladen...','progress.loadingZip':'ZIP wird entpackt...',
+    'log.zipCsv':'ZIP: {0} Bilder. CSV: {1} Einträge.','log.noCsv':'⚠ Kein CSV-Eintrag für: {0} — wird trotzdem geprüft.','log.image':'Bild: {0}','log.imagePdf':'Bild: {0} (PDF→JPG)','log.imageSvg':'Bild: {0} (SVG→JPG)','log.skipped':'⏭ Übersprungen (bereits geprüft): {0}','log.duplicate':'Duplikat: {0}','log.cancelReq':'⏹ Abbruch angefordert — laufendes Bild wird noch fertig geprüft...','log.cancelled':'⏹ Prüfung abgebrochen. {0} Einträge verarbeitet.','log.finished':'Fertig. {0} Einträge geprüft.','log.loadErr':'⚠ Fehler beim Laden: {0} — {1}','log.apiErr':'API-Fehler: {0}','log.saveFail':'⚠ Speichern fehlgeschlagen: {0}','log.seenFailed':'Bereits geprüfte Einreichungen konnten nicht geladen werden ({0}) — Duplikatprüfung ist für diesen Lauf eingeschränkt.',
+    'err.imageTooBig':'Bild zu groß (Auflösung über 8000 px) — wird automatisch verkleinert','err.fileTooLarge':'Datei zu groß — bitte als JPG/PNG unter 15 MB einreichen','err.tooLargeMb':'Datei zu groß ({0} MB)','err.network':'Netzwerkfehler — Internetverbindung prüfen und erneut versuchen','err.rateLimit':'API-Limit erreicht — wird automatisch wiederholt','err.session':'Sitzung abgelaufen — bitte neu anmelden','err.overloaded':'KI-Service vorübergehend überlastet — bitte später erneut versuchen','err.svgRender':'SVG konnte nicht gerendert werden','err.unsupported':'Dateiformat nicht unterstützt ({0}).','err.notLoggedIn':'Nicht angemeldet','err.timeout':'Zeitüberschreitung — bitte Internetverbindung prüfen und erneut versuchen','err.zipLoad':'ZIP konnte nicht geladen werden: {0}',
     'changelog.title':'Änderungsprotokoll'
   },
   en: {
@@ -376,9 +376,9 @@ const I18N = {
     'prod.notLoadable':'File not loadable','prod.checkFailed':'Check failed','prod.notFound':'Not found',
     'badge.noCsv':'⚠ No CSV entry','badge.noCsvTitle':'No CSV entry.',
     'msg.csvLoaded':'{0} CSV entries loaded.',
-    'progress.checking':'Checking image {0} of {1}: {2}','progress.done':'Check complete. {0} images checked.','progress.cancelled':'Check cancelled after {0} of {1} images.',
-    'log.zipCsv':'ZIP: {0} images. CSV: {1} entries.','log.noCsv':'⚠ No CSV entry for: {0} — checking anyway.','log.image':'Image: {0}','log.imagePdf':'Image: {0} (PDF→JPG)','log.imageSvg':'Image: {0} (SVG→JPG)','log.skipped':'⏭ Skipped (already checked): {0}','log.duplicate':'Duplicate: {0}','log.cancelReq':'⏹ Cancellation requested — the current image will finish first...','log.cancelled':'⏹ Check cancelled. {0} entries processed.','log.finished':'Done. {0} entries checked.','log.loadErr':'⚠ Error loading: {0} — {1}','log.apiErr':'API error: {0}','log.saveFail':'⚠ Save failed: {0}',
-    'err.imageTooBig':'Image too large (resolution over 8000 px) — resized automatically','err.fileTooLarge':'File too large — please submit as JPG/PNG under 15 MB','err.tooLargeMb':'File too large ({0} MB)','err.network':'Network error — check your internet connection and try again','err.rateLimit':'API limit reached — retrying automatically','err.session':'Session expired — please sign in again','err.overloaded':'AI service temporarily overloaded — please try again later','err.svgRender':'SVG could not be rendered','err.unsupported':'File format not supported ({0}).','err.notLoggedIn':'Not signed in',
+    'progress.checking':'Checking image {0} of {1}: {2}','progress.done':'Check complete. {0} images checked.','progress.cancelled':'Check cancelled after {0} of {1} images.','progress.loadingSeen':'Loading already-checked submissions...','progress.loadingZip':'Unpacking ZIP...',
+    'log.zipCsv':'ZIP: {0} images. CSV: {1} entries.','log.noCsv':'⚠ No CSV entry for: {0} — checking anyway.','log.image':'Image: {0}','log.imagePdf':'Image: {0} (PDF→JPG)','log.imageSvg':'Image: {0} (SVG→JPG)','log.skipped':'⏭ Skipped (already checked): {0}','log.duplicate':'Duplicate: {0}','log.cancelReq':'⏹ Cancellation requested — the current image will finish first...','log.cancelled':'⏹ Check cancelled. {0} entries processed.','log.finished':'Done. {0} entries checked.','log.loadErr':'⚠ Error loading: {0} — {1}','log.apiErr':'API error: {0}','log.saveFail':'⚠ Save failed: {0}','log.seenFailed':'Could not load already-checked submissions ({0}) — duplicate detection is limited for this run.',
+    'err.imageTooBig':'Image too large (resolution over 8000 px) — resized automatically','err.fileTooLarge':'File too large — please submit as JPG/PNG under 15 MB','err.tooLargeMb':'File too large ({0} MB)','err.network':'Network error — check your internet connection and try again','err.rateLimit':'API limit reached — retrying automatically','err.session':'Session expired — please sign in again','err.overloaded':'AI service temporarily overloaded — please try again later','err.svgRender':'SVG could not be rendered','err.unsupported':'File format not supported ({0}).','err.notLoggedIn':'Not signed in','err.timeout':'Timed out — please check your internet connection and try again','err.zipLoad':'Could not load ZIP: {0}',
     'changelog.title':'Changelog'
   }
 };
@@ -469,7 +469,7 @@ function log(m){const el=document.getElementById('logArea');el.innerHTML+=m+'<br
 function verdictBadge(v){const cls=v==='Genehmigt (KI)'?'badge-green':v==='Genehmigt (Manuell)'?'badge-blue':v==='Duplikat'?'badge-amber':v==='Fehler'?'badge-orange':(v==='Kein Bild'||v==='Bereits geprüft')?'badge-grey':'badge-red';return '<span class="badge '+cls+'">'+verdictLabel(v)+'</span>';}
 function isEmailTruncated(e){return !e||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);}
 
-function friendlyError(rawMsg){if(!rawMsg)return '';const m=String(rawMsg);if(/8000 pixel|image dimensions exceed/i.test(m))return t('err.imageTooBig');if(/file.*too large|zu groß|too large/i.test(m))return t('err.fileTooLarge');if(/network|fetch|cors/i.test(m))return t('err.network');if(/rate_limit/i.test(m))return t('err.rateLimit');if(/nicht angemeldet|sitzung|not signed in|session/i.test(m))return t('err.session');if(/overloaded/i.test(m))return t('err.overloaded');return m.replace(/^(invalid_request_error|api_error|overloaded_error):\s*/i,'').substring(0,120);}
+function friendlyError(rawMsg){if(!rawMsg)return '';const m=String(rawMsg);if(/^timeout:/i.test(m))return t('err.timeout');if(/8000 pixel|image dimensions exceed/i.test(m))return t('err.imageTooBig');if(/file.*too large|zu groß|too large/i.test(m))return t('err.fileTooLarge');if(/network|fetch|cors/i.test(m))return t('err.network');if(/rate_limit/i.test(m))return t('err.rateLimit');if(/nicht angemeldet|sitzung|not signed in|session/i.test(m))return t('err.session');if(/overloaded/i.test(m))return t('err.overloaded');return m.replace(/^(invalid_request_error|api_error|overloaded_error):\s*/i,'').substring(0,120);}
 
 function cleanProductName(raw){if(!raw)return raw;const s=raw.trim();const lo=s.toLowerCase().replace(/[^a-z0-9]/g,'');if(lo.includes('overnoatsbana')||(lo.includes('3bea')&&lo.includes('bana')))return 'Overnight Oats Banana Split 400g';if(lo.includes('overnoatserdbe')||lo.includes('overnoatsedle')||(lo.includes('3bea')&&(lo.includes('erdbe')||lo.includes('edle'))))return 'Overnight Oats Edle Erdbeere 400g';if(/^3bea\.?overn/i.test(s)||/^3beaov/i.test(s)||/^3b\.overn/i.test(s))return 'Overnight Oats 400g';return raw;}
 function dateFromFilename(fn){if(!fn)return '';let m=fn.match(/(\d{4})-(\d{2})-(\d{2})/);if(m)return `${m[3]}.${m[2]}.${m[1]}`;m=fn.match(/(\d{4})(\d{2})(\d{2})/);if(m&&+m[2]<=12&&+m[3]<=31)return `${m[3]}.${m[2]}.${m[1]}`;m=fn.match(/(\d{2})[.\-](\d{2})[.\-](\d{4})/);if(m)return `${m[1]}.${m[2]}.${m[3]}`;return '';}
@@ -517,6 +517,16 @@ async function saveReceipt(entry){
   }catch(e){ log(t('log.saveFail', e.message)); }
 }
 
+// Dedup key = receipt fingerprint (retailer|date|total) + submitter identity.
+// The AI fingerprint alone collides whenever two different entrants buy the
+// same product at the same retailer chain on the same day (common in a
+// receipt contest) - adding email/name keeps it a per-person check.
+function dedupKey(fp, email, vorname, nachname){
+  if(!fp) return '';
+  const id=(email||'').trim().toLowerCase() || ((vorname||'')+' '+(nachname||'')).trim().toLowerCase();
+  return fp+'|'+id;
+}
+
 // Load already-checked submissions + approved fingerprints from Supabase.
 async function loadSeen(){
   const seen={}, fps=new Set();
@@ -526,7 +536,7 @@ async function loadSeen(){
   for(const r of (data||[])){
     const isSystemError = r.verdict==='Fehler' || String(r.reason||'').startsWith('Konfiguration konnte nicht geladen');
     if(r.submission_id && !seen[r.submission_id] && !isSystemError) seen[r.submission_id]=r;
-    if(r.fingerprint && String(r.verdict||'').startsWith('Genehmigt')) fps.add(r.fingerprint);
+    if(r.fingerprint && String(r.verdict||'').startsWith('Genehmigt')) fps.add(dedupKey(r.fingerprint, r.email, r.vorname, r.nachname));
   }
   return {seen,fps};
 }
@@ -548,6 +558,8 @@ async function pdfToBase64(ab){await loadPDFJS();const pdf=await pdfjsLib.getDoc
 async function fileToBase64AndType(file){const ext=(file.name.toLowerCase().match(/\.([^.]+)$/)||['',''])[1];if(file.type==='application/pdf'||ext==='pdf'){const ab=await file.arrayBuffer();const r=await pdfToBase64(ab);return {base64:r.b64,mediaType:'image/jpeg'};}if(/^(heic|heif|raw|dng|cr2|nef)$/.test(ext))return {base64:null,mediaType:null,unsupported:ext.toUpperCase()};const b64=await fileToBase64(file);const mt=file.type&&file.type!=='application/octet-stream'?file.type:ext==='png'?'image/png':ext==='webp'?'image/webp':ext==='gif'?'image/gif':'image/jpeg';return {base64:b64,mediaType:mt};}
 
 // ---------------- Tab 1: Tally ----------------
+function withTimeout(promise,ms,label){let timer;const timeout=new Promise((_,rej)=>{timer=setTimeout(()=>rej(new Error(`timeout: ${label}`)),ms);});return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer));}
+
 async function startVerification(){
   document.getElementById('startBtn').disabled=true;
   document.getElementById('progressCard').style.display='block';
@@ -556,10 +568,27 @@ async function startVerification(){
   document.getElementById('tallyBody').innerHTML='';document.getElementById('logArea').innerHTML='';
   tallyResults=[];tallyFingerprints=new Set();stopRequested=false;
   const skipSeen=document.getElementById('skipSeenToggle').checked;
-  const {seen,fps}=await loadSeen();fps.forEach(f=>tallyFingerprints.add(f));
 
-  const zip=await JSZip.loadAsync(zipFile);
-  const imgs=Object.keys(zip.files).filter(n=>/\.(jpg|jpeg|png|gif|webp|pdf|svg)$/i.test(n)&&!zip.files[n].dir);
+  document.getElementById('progressText').textContent=t('progress.loadingSeen');
+  let seen={},fps=new Set();
+  try{
+    const r=await withTimeout(loadSeen(),20000,'loadSeen');
+    seen=r.seen;fps=r.fps;fps.forEach(f=>tallyFingerprints.add(f));
+  }catch(e){
+    log('⚠ '+t('log.seenFailed', friendlyError(e.message)));
+  }
+
+  document.getElementById('progressText').textContent=t('progress.loadingZip');
+  let zip,imgs;
+  try{
+    zip=await withTimeout(JSZip.loadAsync(zipFile),120000,'zip');
+    imgs=Object.keys(zip.files).filter(n=>/\.(jpg|jpeg|png|gif|webp|pdf|svg)$/i.test(n)&&!zip.files[n].dir);
+  }catch(e){
+    document.getElementById('progressText').textContent=t('err.zipLoad', friendlyError(e.message));
+    log('⚠ '+t('err.zipLoad', friendlyError(e.message)));
+    document.getElementById('startBtn').disabled=false;document.getElementById('stopBtn').style.display='none';
+    return;
+  }
   log(t('log.zipCsv', imgs.length, csvData.length));
 
   function slugifyFilename(raw){if(!raw)return '';try{let name=raw.split('/').pop().split('?')[0];name=name.replace(/\+/g,' ');name=decodeURIComponent(name);name=name.toLowerCase().trim();name=name.replace(/\s*\(\d+\)\s*/g,'');name=name.replace(/\s+/g,'-');return name;}catch(e){return raw.toLowerCase().trim().replace(/\s+/g,'-');}}
@@ -603,9 +632,9 @@ async function startVerification(){
     } else if(loadError){res.verdict='Abgelehnt';res.reason=loadError;res.products=[{name:t('prod.notLoadable'),price:'–'}];}
     else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.verdict='Fehler';res.reason=friendlyError(e.message);res.products=[{name:t('prod.checkFailed'),price:'–'}];log(t('log.apiErr', e.message));}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';}
 
-    const fp=res.fingerprint;
+    const fp=dedupKey(res.fingerprint, email, vorname, nachname);
     if(!wasSkipped){
-      if(fp&&tallyFingerprints.has(fp)){res.verdict='Duplikat';log(t('log.duplicate', fp));}
+      if(fp&&tallyFingerprints.has(fp)){res.verdict='Duplikat';log(t('log.duplicate', res.fingerprint));}
       else if(fp&&res.verdict==='Genehmigt (KI)'){tallyFingerprints.add(fp);}
       await saveReceipt({source:'tally',submissionId,submittedAt,vorname,nachname,email,...res});
     }
@@ -637,7 +666,7 @@ document.getElementById('emailDrop').addEventListener('dragover',e=>{e.preventDe
 document.getElementById('emailDrop').addEventListener('dragleave',e=>e.currentTarget.classList.remove('dragover'));
 document.getElementById('emailDrop').addEventListener('drop',e=>{e.preventDefault();e.currentTarget.classList.remove('dragover');loadEmailImages(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')||f.type==='application/pdf'||/\.(pdf|svg)$/i.test(f.name)));});
 function loadEmailImages(files){emailImages=files;const rows=document.getElementById('emailRows');rows.innerHTML='';files.forEach((f,i)=>{const url=URL.createObjectURL(f);const div=document.createElement('div');div.className='img-row';div.innerHTML=`<img src="${url}" class="img-thumb"><div style="font-size:0.8rem;color:#888;min-width:100px;">${f.name}</div><div class="img-fields"><input type="text" placeholder="${t('ph.firstName')}" id="ef-vn-${i}"><input type="text" placeholder="${t('ph.lastName')}" id="ef-nn-${i}"><input type="email" placeholder="${t('ph.email')}" id="ef-em-${i}"></div><div class="img-status" id="es-${i}"></div>`;rows.appendChild(div);});document.getElementById('emailImgList').style.display=files.length>0?'block':'none';}
-async function runEmailVerification(){const btn=document.getElementById('emailVerifyBtn');btn.disabled=true;btn.textContent=t('btn.checking');emailResults=[];const {fps}=await loadSeen();for(let i=0;i<emailImages.length;i++){const f=emailImages[i];const vorname=document.getElementById('ef-vn-'+i).value.trim();const nachname=document.getElementById('ef-nn-'+i).value.trim();const email=document.getElementById('ef-em-'+i).value.trim();document.getElementById('es-'+i).innerHTML='<span style="color:#888;font-size:0.8rem;">'+t('status.checking')+'</span>';const {base64:b64,mediaType:mt,unsupported}=await fileToBase64AndType(f);let res={retailer:'–',date:'–',total:'–',products:[{name:t('prod.notFound'),price:'–'}],verdict:'Abgelehnt',fingerprint:'',reason:''};if(unsupported){res.reason=t('err.unsupported', unsupported);}else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.verdict='Fehler';res.reason=friendlyError(e.message);}}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';if(res.fingerprint&&fps.has(res.fingerprint)){res.verdict='Duplikat';}else if(res.fingerprint&&res.verdict==='Genehmigt (KI)'){fps.add(res.fingerprint);}const entry={source:'email',submittedAt:'',vorname,nachname,email,...res};emailResults.push(entry);if(res.verdict!=='Duplikat')await saveReceipt(entry);document.getElementById('es-'+i).innerHTML=verdictBadge(res.verdict);const p=Array.isArray(entry.products)?entry.products:[{name:'–',price:'–'}];const tr=document.createElement('tr');tr.innerHTML=`<td>${entry.vorname}</td><td>${entry.nachname}</td><td style="font-size:0.8rem;">${entry.email}</td><td>${entry.retailer}</td><td>${entry.date}</td><td>${entry.total}</td><td>${p.map(x=>x.name).join('<br>')}</td><td>${p.map(x=>x.price||'–').join('<br>')}</td><td><span class="fingerprint">${entry.fingerprint||'–'}</span></td><td>${verdictBadge(entry.verdict)}</td>`;document.getElementById('emailBody').appendChild(tr);}document.getElementById('emailResultsSection').style.display='block';btn.disabled=false;btn.textContent=t('email.checkAll');}
+async function runEmailVerification(){const btn=document.getElementById('emailVerifyBtn');btn.disabled=true;btn.textContent=t('btn.checking');emailResults=[];const {fps}=await loadSeen();for(let i=0;i<emailImages.length;i++){const f=emailImages[i];const vorname=document.getElementById('ef-vn-'+i).value.trim();const nachname=document.getElementById('ef-nn-'+i).value.trim();const email=document.getElementById('ef-em-'+i).value.trim();document.getElementById('es-'+i).innerHTML='<span style="color:#888;font-size:0.8rem;">'+t('status.checking')+'</span>';const {base64:b64,mediaType:mt,unsupported}=await fileToBase64AndType(f);let res={retailer:'–',date:'–',total:'–',products:[{name:t('prod.notFound'),price:'–'}],verdict:'Abgelehnt',fingerprint:'',reason:''};if(unsupported){res.reason=t('err.unsupported', unsupported);}else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.verdict='Fehler';res.reason=friendlyError(e.message);}}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';const fp=dedupKey(res.fingerprint, email, vorname, nachname);if(fp&&fps.has(fp)){res.verdict='Duplikat';}else if(fp&&res.verdict==='Genehmigt (KI)'){fps.add(fp);}const entry={source:'email',submittedAt:'',vorname,nachname,email,...res};emailResults.push(entry);if(res.verdict!=='Duplikat')await saveReceipt(entry);document.getElementById('es-'+i).innerHTML=verdictBadge(res.verdict);const p=Array.isArray(entry.products)?entry.products:[{name:'–',price:'–'}];const tr=document.createElement('tr');tr.innerHTML=`<td>${entry.vorname}</td><td>${entry.nachname}</td><td style="font-size:0.8rem;">${entry.email}</td><td>${entry.retailer}</td><td>${entry.date}</td><td>${entry.total}</td><td>${p.map(x=>x.name).join('<br>')}</td><td>${p.map(x=>x.price||'–').join('<br>')}</td><td><span class="fingerprint">${entry.fingerprint||'–'}</span></td><td>${verdictBadge(entry.verdict)}</td>`;document.getElementById('emailBody').appendChild(tr);}document.getElementById('emailResultsSection').style.display='block';btn.disabled=false;btn.textContent=t('email.checkAll');}
 
 // ---------------- Tab 3: Excel import ----------------
 document.getElementById('excelImportInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;document.getElementById('excelImportLabel').textContent=f.name+' ✓';document.getElementById('excelImportZone').classList.add('done');const buf=await f.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});let ws=null;for(const name of wb.SheetNames){const d=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1});if((d[0]||[]).some(h=>String(h||'').toLowerCase().includes('vorname'))){ws=wb.Sheets[name];break;}}if(!ws){alert(t('excel.noSheet'));return;}const data=XLSX.utils.sheet_to_json(ws,{header:1});const hdrs=data[0].map(h=>String(h||'').trim().toLowerCase());const ci=k=>hdrs.findIndex(h=>h.includes(k));const iV=ci('vorname'),iN=ci('nachname'),iE=hdrs.findIndex(h=>h.includes('mail')),iP=ci('produkt'),iPr=ci('preis'),iH=hdrs.findIndex(h=>h.includes('handel')||h.includes('einzel')),iD=ci('datum');excelImportResults=[];let flags=0;const tbody=document.getElementById('excelImportBody');tbody.innerHTML='';for(let i=1;i<data.length;i++){const row=data[i];const vn=String(row[iV]||'').trim(),nn=String(row[iN]||'').trim();if(!vn&&!nn)continue;const em=String(row[iE]||'').trim();const prod=String(row[iP]||'').trim();const preis=iPr>=0?String(row[iPr]||'').trim():'–';const haendler=iH>=0?String(row[iH]||'').trim():'–';const datum=formatDate(iD>=0?String(row[iD]||'').trim():'–');const trunc=isEmailTruncated(em);if(trunc&&em)flags++;const entry={source:'excel',submittedAt:datum,vorname:vn,nachname:nn,email:em,retailer:haendler,date:datum,total:'–',products:[{name:prod,price:preis}],fingerprint:'',verdict:'Genehmigt (Manuell)'};excelImportResults.push(entry);await saveReceipt(entry);const tr=document.createElement('tr');const ec=trunc&&em?`<td><span class="flag-email" title="${t('email.incomplete')}">⚠ ${em}</span></td>`:`<td style="font-size:0.8rem;">${em||'–'}</td>`;tr.innerHTML=`<td>${datum||'–'}</td><td>${vn}</td><td>${nn}</td>${ec}<td>${haendler||'–'}</td><td>${prod||'–'}</td><td>${preis||'–'}</td><td>${verdictBadge('Genehmigt (Manuell)')}</td>`;tbody.appendChild(tr);}document.getElementById('excelFlagMsg').textContent=flags>0?t('excel.flag', flags):'';document.getElementById('excelImportResults').style.display='block';});
