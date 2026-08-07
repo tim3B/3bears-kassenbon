@@ -477,7 +477,7 @@ function formatDate(raw){if(!raw||raw==='–'||raw==='Unbekannt')return raw||'�
 function toISO(v){if(!v)return null;const d=new Date(v);return isNaN(d)?null:d.toISOString();}
 
 let tallyResults=[], emailResults=[], excelImportResults=[];
-let tallyFingerprints=new Set(), csvData=[], zipFile=null, emailImages=[];
+let tallyFingerprints=new Map(), csvData=[], zipFile=null, emailImages=[];
 let mergeFiles=[], mergedResults=[];
 let stopRequested=false;
 
@@ -528,15 +528,22 @@ function dedupKey(fp, email, vorname, nachname){
 }
 
 // Load already-checked submissions + approved fingerprints from Supabase.
+// fps maps dedupKey -> the submission_id that "owns" it, so re-checking the
+// SAME submission again (re-run, toggle off, etc.) never flags it as a
+// duplicate of itself - only a genuinely different submission sharing that
+// fingerprint+identity counts as a real Duplikat.
 async function loadSeen(){
-  const seen={}, fps=new Set();
+  const seen={}, fps=new Map();
   const { data } = await sb.from('receipts')
     .select('submission_id,fingerprint,verdict,retailer,receipt_date,total,vorname,nachname,email,reason,raw_model_json')
     .order('checked_at',{ascending:false}).limit(10000);
   for(const r of (data||[])){
     const isSystemError = r.verdict==='Fehler' || String(r.reason||'').startsWith('Konfiguration konnte nicht geladen');
     if(r.submission_id && !seen[r.submission_id] && !isSystemError) seen[r.submission_id]=r;
-    if(r.fingerprint && String(r.verdict||'').startsWith('Genehmigt')) fps.add(dedupKey(r.fingerprint, r.email, r.vorname, r.nachname));
+    if(r.fingerprint && String(r.verdict||'').startsWith('Genehmigt')){
+      const k=dedupKey(r.fingerprint, r.email, r.vorname, r.nachname);
+      if(!fps.has(k)) fps.set(k, r.submission_id);
+    }
   }
   return {seen,fps};
 }
@@ -566,14 +573,14 @@ async function startVerification(){
   document.getElementById('stopBtn').disabled=false;document.getElementById('stopBtn').textContent=t('btn.cancel');document.getElementById('stopBtn').style.display='';
   document.getElementById('resultsSection').style.display='none';
   document.getElementById('tallyBody').innerHTML='';document.getElementById('logArea').innerHTML='';
-  tallyResults=[];tallyFingerprints=new Set();stopRequested=false;
+  tallyResults=[];tallyFingerprints=new Map();stopRequested=false;
   const skipSeen=document.getElementById('skipSeenToggle').checked;
 
   document.getElementById('progressText').textContent=t('progress.loadingSeen');
-  let seen={},fps=new Set();
+  let seen={},fps=new Map();
   try{
     const r=await withTimeout(loadSeen(),20000,'loadSeen');
-    seen=r.seen;fps=r.fps;fps.forEach(f=>tallyFingerprints.add(f));
+    seen=r.seen;fps=r.fps;fps.forEach((ownerId,k)=>tallyFingerprints.set(k,ownerId));
   }catch(e){
     log('⚠ '+t('log.seenFailed', friendlyError(e.message)));
   }
@@ -634,8 +641,8 @@ async function startVerification(){
 
     const fp=dedupKey(res.fingerprint, email, vorname, nachname);
     if(!wasSkipped){
-      if(fp&&tallyFingerprints.has(fp)){res.verdict='Duplikat';log(t('log.duplicate', res.fingerprint));}
-      else if(fp&&res.verdict==='Genehmigt (KI)'){tallyFingerprints.add(fp);}
+      if(fp&&tallyFingerprints.has(fp)&&tallyFingerprints.get(fp)!==submissionId){res.verdict='Duplikat';log(t('log.duplicate', res.fingerprint));}
+      else if(fp&&res.verdict==='Genehmigt (KI)'){tallyFingerprints.set(fp,submissionId);}
       await saveReceipt({source:'tally',submissionId,submittedAt,vorname,nachname,email,...res});
     }
 
@@ -666,7 +673,7 @@ document.getElementById('emailDrop').addEventListener('dragover',e=>{e.preventDe
 document.getElementById('emailDrop').addEventListener('dragleave',e=>e.currentTarget.classList.remove('dragover'));
 document.getElementById('emailDrop').addEventListener('drop',e=>{e.preventDefault();e.currentTarget.classList.remove('dragover');loadEmailImages(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')||f.type==='application/pdf'||/\.(pdf|svg)$/i.test(f.name)));});
 function loadEmailImages(files){emailImages=files;const rows=document.getElementById('emailRows');rows.innerHTML='';files.forEach((f,i)=>{const url=URL.createObjectURL(f);const div=document.createElement('div');div.className='img-row';div.innerHTML=`<img src="${url}" class="img-thumb"><div style="font-size:0.8rem;color:#888;min-width:100px;">${f.name}</div><div class="img-fields"><input type="text" placeholder="${t('ph.firstName')}" id="ef-vn-${i}"><input type="text" placeholder="${t('ph.lastName')}" id="ef-nn-${i}"><input type="email" placeholder="${t('ph.email')}" id="ef-em-${i}"></div><div class="img-status" id="es-${i}"></div>`;rows.appendChild(div);});document.getElementById('emailImgList').style.display=files.length>0?'block':'none';}
-async function runEmailVerification(){const btn=document.getElementById('emailVerifyBtn');btn.disabled=true;btn.textContent=t('btn.checking');emailResults=[];const {fps}=await loadSeen();for(let i=0;i<emailImages.length;i++){const f=emailImages[i];const vorname=document.getElementById('ef-vn-'+i).value.trim();const nachname=document.getElementById('ef-nn-'+i).value.trim();const email=document.getElementById('ef-em-'+i).value.trim();document.getElementById('es-'+i).innerHTML='<span style="color:#888;font-size:0.8rem;">'+t('status.checking')+'</span>';const {base64:b64,mediaType:mt,unsupported}=await fileToBase64AndType(f);let res={retailer:'–',date:'–',total:'–',products:[{name:t('prod.notFound'),price:'–'}],verdict:'Abgelehnt',fingerprint:'',reason:''};if(unsupported){res.reason=t('err.unsupported', unsupported);}else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.verdict='Fehler';res.reason=friendlyError(e.message);}}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';const fp=dedupKey(res.fingerprint, email, vorname, nachname);if(fp&&fps.has(fp)){res.verdict='Duplikat';}else if(fp&&res.verdict==='Genehmigt (KI)'){fps.add(fp);}const entry={source:'email',submittedAt:'',vorname,nachname,email,...res};emailResults.push(entry);if(res.verdict!=='Duplikat')await saveReceipt(entry);document.getElementById('es-'+i).innerHTML=verdictBadge(res.verdict);const p=Array.isArray(entry.products)?entry.products:[{name:'–',price:'–'}];const tr=document.createElement('tr');tr.innerHTML=`<td>${entry.vorname}</td><td>${entry.nachname}</td><td style="font-size:0.8rem;">${entry.email}</td><td>${entry.retailer}</td><td>${entry.date}</td><td>${entry.total}</td><td>${p.map(x=>x.name).join('<br>')}</td><td>${p.map(x=>x.price||'–').join('<br>')}</td><td><span class="fingerprint">${entry.fingerprint||'–'}</span></td><td>${verdictBadge(entry.verdict)}</td>`;document.getElementById('emailBody').appendChild(tr);}document.getElementById('emailResultsSection').style.display='block';btn.disabled=false;btn.textContent=t('email.checkAll');}
+async function runEmailVerification(){const btn=document.getElementById('emailVerifyBtn');btn.disabled=true;btn.textContent=t('btn.checking');emailResults=[];const {fps}=await loadSeen();for(let i=0;i<emailImages.length;i++){const f=emailImages[i];const vorname=document.getElementById('ef-vn-'+i).value.trim();const nachname=document.getElementById('ef-nn-'+i).value.trim();const email=document.getElementById('ef-em-'+i).value.trim();document.getElementById('es-'+i).innerHTML='<span style="color:#888;font-size:0.8rem;">'+t('status.checking')+'</span>';const {base64:b64,mediaType:mt,unsupported}=await fileToBase64AndType(f);let res={retailer:'–',date:'–',total:'–',products:[{name:t('prod.notFound'),price:'–'}],verdict:'Abgelehnt',fingerprint:'',reason:''};if(unsupported){res.reason=t('err.unsupported', unsupported);}else if(b64){try{res=await callVerify(b64,mt);}catch(e){res.verdict='Fehler';res.reason=friendlyError(e.message);}}if(res.verdict==='Genehmigt')res.verdict='Genehmigt (KI)';const fp=dedupKey(res.fingerprint, email, vorname, nachname);if(fp&&fps.has(fp)){res.verdict='Duplikat';}else if(fp&&res.verdict==='Genehmigt (KI)'){fps.set(fp,null);}const entry={source:'email',submittedAt:'',vorname,nachname,email,...res};emailResults.push(entry);if(res.verdict!=='Duplikat')await saveReceipt(entry);document.getElementById('es-'+i).innerHTML=verdictBadge(res.verdict);const p=Array.isArray(entry.products)?entry.products:[{name:'–',price:'–'}];const tr=document.createElement('tr');tr.innerHTML=`<td>${entry.vorname}</td><td>${entry.nachname}</td><td style="font-size:0.8rem;">${entry.email}</td><td>${entry.retailer}</td><td>${entry.date}</td><td>${entry.total}</td><td>${p.map(x=>x.name).join('<br>')}</td><td>${p.map(x=>x.price||'–').join('<br>')}</td><td><span class="fingerprint">${entry.fingerprint||'–'}</span></td><td>${verdictBadge(entry.verdict)}</td>`;document.getElementById('emailBody').appendChild(tr);}document.getElementById('emailResultsSection').style.display='block';btn.disabled=false;btn.textContent=t('email.checkAll');}
 
 // ---------------- Tab 3: Excel import ----------------
 document.getElementById('excelImportInput').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;document.getElementById('excelImportLabel').textContent=f.name+' ✓';document.getElementById('excelImportZone').classList.add('done');const buf=await f.arrayBuffer();const wb=XLSX.read(buf,{type:'array'});let ws=null;for(const name of wb.SheetNames){const d=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1});if((d[0]||[]).some(h=>String(h||'').toLowerCase().includes('vorname'))){ws=wb.Sheets[name];break;}}if(!ws){alert(t('excel.noSheet'));return;}const data=XLSX.utils.sheet_to_json(ws,{header:1});const hdrs=data[0].map(h=>String(h||'').trim().toLowerCase());const ci=k=>hdrs.findIndex(h=>h.includes(k));const iV=ci('vorname'),iN=ci('nachname'),iE=hdrs.findIndex(h=>h.includes('mail')),iP=ci('produkt'),iPr=ci('preis'),iH=hdrs.findIndex(h=>h.includes('handel')||h.includes('einzel')),iD=ci('datum');excelImportResults=[];let flags=0;const tbody=document.getElementById('excelImportBody');tbody.innerHTML='';for(let i=1;i<data.length;i++){const row=data[i];const vn=String(row[iV]||'').trim(),nn=String(row[iN]||'').trim();if(!vn&&!nn)continue;const em=String(row[iE]||'').trim();const prod=String(row[iP]||'').trim();const preis=iPr>=0?String(row[iPr]||'').trim():'–';const haendler=iH>=0?String(row[iH]||'').trim():'–';const datum=formatDate(iD>=0?String(row[iD]||'').trim():'–');const trunc=isEmailTruncated(em);if(trunc&&em)flags++;const entry={source:'excel',submittedAt:datum,vorname:vn,nachname:nn,email:em,retailer:haendler,date:datum,total:'–',products:[{name:prod,price:preis}],fingerprint:'',verdict:'Genehmigt (Manuell)'};excelImportResults.push(entry);await saveReceipt(entry);const tr=document.createElement('tr');const ec=trunc&&em?`<td><span class="flag-email" title="${t('email.incomplete')}">⚠ ${em}</span></td>`:`<td style="font-size:0.8rem;">${em||'–'}</td>`;tr.innerHTML=`<td>${datum||'–'}</td><td>${vn}</td><td>${nn}</td>${ec}<td>${haendler||'–'}</td><td>${prod||'–'}</td><td>${preis||'–'}</td><td>${verdictBadge('Genehmigt (Manuell)')}</td>`;tbody.appendChild(tr);}document.getElementById('excelFlagMsg').textContent=flags>0?t('excel.flag', flags):'';document.getElementById('excelImportResults').style.display='block';});
