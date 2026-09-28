@@ -10,5 +10,5 @@ When a session works a backlog task:
    would need to change, stop and ask on the issue.
 3. Work on a `claude/` branch, one commit per change; the PR says `Closes tim3B/3bears-backlog#<n>`.
 4. Never touch live data while testing.
-5. **Grade B** (changes a figure, a calculation or a data flow) never goes live without Tim's `ship` label.
+5. A change to a **figure, a calculation or a data flow** never goes live without Tim's `ship` label.
 6. Finish with one short comment on the issue: what changed, how it was tested, the link, how to undo it.
