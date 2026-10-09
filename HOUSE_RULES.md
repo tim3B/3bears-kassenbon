@@ -101,9 +101,12 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Never gate work on the clock (scheduled runs arrive late or not at all). Gate on how old the data is.
 - An unbounded Supabase select returns at most 1,000 rows with no error. Page every read whose size depends
   on the data, with a stable ORDER BY, including throwaway check scripts.
-- Cockpit and eCom: migrations apply themselves on merge (apply-migrations workflow). Never hand Tim SQL to
-  paste there. After each merge, check the workflow run and probe the live object; a later migration can
-  silently undo an earlier one. Other repos have no such workflow yet: follow that repo's CLAUDE.md.
+- Claude applies every database change itself. Never hand Tim SQL to paste (Tim, 09.10.2026).
+  The 3bears-bi Supabase project (cockpit, eCom and BI data): add `db/NNN_*.sql` plus its checks file to the
+  cockpit or eCom repo and merge; the apply-migrations workflow applies it. After each merge, check the
+  workflow run and probe the live object; a later migration can silently undo an earlier one.
+  Other Supabase projects: use that repo's apply-migrations workflow. Where none exists yet (backlog #76),
+  the change waits for it.
 - Supabase projects can't join each other. Don't touch Linda's projects or Katha's Ops-Planning project
   without Tim; their apps write with the public key, so locking them down breaks them.
 
