@@ -9,7 +9,7 @@ Background knowledge per topic — read the relevant section before working on i
 - The Anthropic key stays server-side (`verify-receipt` function, Netlify env); never put it in the browser or `public/config.js`.
 - The verify prompt is built at runtime from the config tables (`retailers`, `products`, `training_examples`); never hardcode retailers or product spellings. "Training" is dictionary + few-shot, not fine-tuning.
 - Supabase auto-expose is OFF: every new table or view needs explicit grants. Edits to config tables stay admin-only (`is_admin()`); promoting a user to admin is SQL-only.
-- Every new UI string needs DE and EN. Stored data, Excel exports and the AI prompt stay German.
+- Every new UI string needs DE and EN. Stored data (incl. the verdict values in export cells) and the AI prompt stay German. Excel export headers and sheet name follow the chosen language (house rule, Tim 12.10.2026); the Merge tab reads exports by column position, so keep the column order fixed.
 - Monthly Tally export: chunk by receipt COUNT (~80 rows, zip well under ~100 MB), never patch a failed download by re-fetching under its base filename, and check zip entries == CSV rows (details in KNOWLEDGE).
 
 ## 3Bears Backlog — task rules (all sessions)
