@@ -112,6 +112,13 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Supabase projects can't join each other. Don't touch Linda's projects or Katha's Ops-Planning project
   without Tim; their apps write with the public key, so locking them down breaks them.
 
+## Language (DE/EN)
+- Every tool has a DE | EN switch in its header. German is the default on every visit and the choice is not
+  remembered. Exception: Tim's login (tim.nichols@3bears.de) opens in English (Tim, 12.10.2026).
+- The switch changes the interface only. Data (product, customer and action names) stays as entered.
+- Excel exports follow the chosen language: sheet names, column headers and labels.
+- Numbers follow the language: German style in DE (1.234,5), English style in EN (1,234.5).
+
 ## Excel
 - Tim uses Excel for Mac with German settings: formulas use `;` separators. Never send Windows click paths.
   Best: point him to a working formula in the same workbook to copy and adapt.
