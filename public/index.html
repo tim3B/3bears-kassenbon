@@ -491,7 +491,10 @@ let stopRequested=false;
 function stopVerification(){stopRequested=true;document.getElementById('stopBtn').disabled=true;document.getElementById('stopBtn').textContent=t('cancelling');log(t('log.cancelReq'));}
 
 function rowToArray(r){const p=Array.isArray(r.products)?r.products:[{name:r.product||'–',price:r.product_price||'–'}];return [r.submittedAt||'',r.vorname||'',r.nachname||'',r.email||'',r.retailer||'–',r.date||'–',r.total||'–',p.map(x=>x.name).join(' | '),p.map(x=>x.price||'–').join(' | '),r.fingerprint||'',r.verdict||'',r.reason||''];}
-function exportExcel(data,filename){const wb=XLSX.utils.book_new();const rows=[HEADERS,...data.map(rowToArray)];const ws=XLSX.utils.aoa_to_sheet(rows,{raw:false});ws['!cols']=[12,10,10,25,15,12,10,22,12,22,16].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,'Ergebnisse');XLSX.writeFile(wb,filename+'.xlsx');}
+// Headers and sheet name follow the DE/EN switch (house rule 12.10.2026); cell values stay German (stored data).
+// The Merge tab reads exports by column position, so translated headers do not affect it.
+const HEADER_KEYS = ['th.submitted','th.firstName','th.lastName','th.email','th.retailer','th.date','th.amount','th.products','th.prices','th.fingerprint','th.status','th.reason'];
+function exportExcel(data,filename){const wb=XLSX.utils.book_new();const rows=[HEADER_KEYS.map(k=>t(k)),...data.map(rowToArray)];const ws=XLSX.utils.aoa_to_sheet(rows,{raw:false});ws['!cols']=[12,10,10,25,15,12,10,22,12,22,16].map(w=>({wch:w}));XLSX.utils.book_append_sheet(wb,ws,t('common.results'));XLSX.writeFile(wb,filename+'.xlsx');}
 
 async function resizeIfNeeded(b64,mediaType){return new Promise(resolve=>{const img=new Image();img.onload=()=>{const MAX=7000;if(img.naturalWidth<=MAX&&img.naturalHeight<=MAX){resolve({b64,mediaType});return;}const scale=Math.min(MAX/img.naturalWidth,MAX/img.naturalHeight);const c=document.createElement('canvas');c.width=Math.floor(img.naturalWidth*scale);c.height=Math.floor(img.naturalHeight*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve({b64:c.toDataURL('image/jpeg',0.92).split(',')[1],mediaType:'image/jpeg'});};img.onerror=()=>resolve({b64,mediaType});img.src='data:'+mediaType+';base64,'+b64;});}
 
