@@ -85,6 +85,8 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 | Tool ideas | 3bears-fulfilment and new ideas | |
 | Customer Success tool | idea only, no repo | |
 
+- Sessions: one sidebar folder per tool, named as the Tool column above (Cockpit, eCom tool, Order intake, Ops tool,
+  …). Claude cannot move a session into a folder; when a session is not in its tool's folder, say once which one.
 - Never ask Tim for a tool's URL. Sites are behind Microsoft sign-in, so a bare request gets a redirect to
   `/sign-in`; that is not a failure. `/api/health` shows a site is up.
 - Hosting: Netlify. Login: Microsoft 365 / Entra ID ("Sign in with Microsoft", @3bears.de only), never Google.
