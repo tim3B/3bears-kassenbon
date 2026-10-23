@@ -24,3 +24,9 @@ When a session works a backlog task:
 4. Never touch live data while testing.
 5. A change to a **figure, a calculation or a data flow** never goes live without Tim's `ship` label.
 6. Finish with one short comment on the issue: what changed, how it was tested, the link, how to undo it.
+
+## Session titles: label every session with its topic
+Tim, 23.10.2026: every Claude Code session (local or cloud) starts its title with the topic it belongs to, e.g. "Cockpit: no step change at month close (backlog #263)".
+- As soon as the topic is clear, rename the session to `<Topic>: <short task>`, adding the backlog/issue/PR number when there is one. Re-title if the scope clearly changes.
+- `<Topic>` matches the Code-tab sidebar sections: Cockpit, eCom tool, Order intake, BI, AI Hub, Ops tool, Sales tool, Tool ideas, Influencer tool, Customer Success tool, Retention, SEO, Subscriptions, Shopify B2B, Personal.
+- Repo → topic: 3bears-cockpit → Cockpit, 3bears-ecom-forecast → eCom tool, 3bears-order-intake → Order intake, 3bears-bi → BI, 3bears-b2b → Shopify B2B, 3bears-subscriptions → Subscriptions, 3bears-organic-seo → SEO, 3bears-sales-tool → Sales tool, 3bears-ai-hub → AI Hub. In 3bears-backlog, use the topic of the tool the item is about. Any other repo: use the repo's short name (e.g. "Fulfilment:").
