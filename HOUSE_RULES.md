@@ -17,6 +17,9 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   he did not ask for. Explain in the text, not on the plot. A chart he cannot read is a failed chart: fix it.
 - Simple beats complete: fewest inputs, no jargon on screen ("cost per new customer", not CAC), one visible
   sanity check instead of many badges. Prefer an app constant to a new DB column.
+- There is one forecast and one plan. Say "the forecast" or "the plan". Never write the retired case names
+  (the values of `FORECAST_CASE` / `PLAN_CASE` and the third case) in replies, issues, PRs, docs or screens.
+  Where the data still stores them as labels, they are storage details, not separate figures (Tim, 14.10.2026).
 - When Tim points at a file, that file is the input. Read it first and keep all his edits. Never regenerate
   it from your own earlier version, and never delete, overwrite or rename it. Deliver new files under new names.
 - Investigate before asking. Given an order number, screenshot or record, look it up yourself. Before asking
@@ -28,8 +31,25 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Handovers say the exact click path, order and expected result. Never hand Tim a decision tree to interpret.
 - Never suggest Slack (3Bears does not use it) or any tool not already in use unless Tim names it.
   There is no IT department: Tim is IT. Alerts belong inside the tool where the decision is made.
+- Teams messages Tim will send: give the final message as a rendered HTML page (SendUserFile, display
+  render; simple tags only: `<p>`, `<b>`, `<ul>`/`<ol>`/`<li>`, `<br>`), so Tim can select all, copy and paste
+  it into Teams with bold headers and bullet/numbered lists intact. Markdown in the chat loses them on paste
+  (Tim, 23.10.2026).
+
+## Change log (Tim, 20.10.2026)
+- tim3B/3bears-backlog `CHANGES.md` is the one change log for every system. **Read side:** before explaining any
+  shift in figures, check it, then search Microsoft 365 (Teams, Outlook, SharePoint/OneDrive) and Tim's other Claude
+  sessions for the dates around the shift. Only then look for technical causes, and never propose asking an agency
+  or vendor before this is done. **Write side:** any session that changes a live system, or whose recommendation is
+  carried out (audits, checklists), adds a line the same day: date live, system, change, who decided, impact on figures.
 
 ## Verifying
+- **Facts only, triple-checked (Tim, 20.10.2026).** Never tell Tim a cause, fault, impact or "X is happening"
+  until it is confirmed three times: (1) read the rule or config, (2) query the actual data that proves the effect,
+  (3) re-check with a second, independent query or source. A rule that *could* misfire is not a fault until the
+  data shows it did. Anything Tim may forward to colleagues must hold this bar. If not yet confirmed, say
+  "unconfirmed" and what check is missing, never present it as fact. (On 20.10.2026 a KLAR Influencer-rule
+  "bug" went to Linda as fact before any data check.)
 - Verify by comparing, not by plausibility. State the authoritative figure and the new figure, row by row,
   and show they match. "Renders", "non-zero" or "looks about right" is not verified.
 - If the data to settle a question is reachable (Supabase, KLAR actuals, a backup), query it before
@@ -42,6 +62,9 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   "what would make this move?" and make it move in a test.
 - A test or guard only counts if you have seen it fail. Every "it's fine" must be a measurement: a skipped step,
   a missed schedule and a missing credential all exit 0.
+- Never pass on a count from a run summary or report header. Open the row-level list, filter to what is live
+  (active, selling) and give that number, then say what the rest is. Before sending, check the answer against
+  everything already said in the chat; if it contradicts it, say plainly which statement was wrong.
 - Check links, paths and commands before sending them. Never report a check you did not do.
 - Speed: a page is only "fast" after a first-hit, full-page-load measurement on the live site. Those checks
   need Tim's Chrome and run locally afterwards; until then say "not verified".
@@ -87,6 +110,9 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 
 - Sessions: one sidebar folder per tool, named as the Tool column above (Cockpit, eCom tool, Order intake, Ops tool,
   …). Claude cannot move a session into a folder; when a session is not in its tool's folder, say once which one.
+- Browser-only steps (no API or connector: Pandectes, Shopify admin settings, GA4/GTM/KLAR admin screens) go to
+  the browser worker as a `browser-task` issue in tim3B/3bears-backlog (see BROWSER_WORKER.md there). Never hand
+  Tim instructions to paste into another chat (Tim, 20.10.2026).
 - Never ask Tim for a tool's URL. Sites are behind Microsoft sign-in, so a bare request gets a redirect to
   `/sign-in`; that is not a failure. `/api/health` shows a site is up.
 - Hosting: Netlify. Login: Microsoft 365 / Entra ID ("Sign in with Microsoft", @3bears.de only), never Google.
@@ -112,6 +138,20 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Supabase projects can't join each other. Don't touch Linda's projects or Katha's Ops-Planning project
   without Tim; their apps write with the public key, so locking them down breaks them.
 
+## Live data from a session (Tim, 12.10.2026)
+- Code needs no key: what Claude builds runs on Netlify / GitHub Actions, which hold their own keys.
+- **No secret or key ever goes into the cloud environment's variables** (the settings box says so: they
+  are visible to everyone using the environment). Never ask Tim for one.
+- Reading live Supabase data from a session: the cockpit's **Run diagnostic (read-only)** workflow.
+  Put a read-only `docs/runbooks/<name>.sql` in tim3B/3bears-cockpit, push it, dispatch
+  `run-diagnostic.yml` (GitHub Actions) with `file` and `project` = `bi` (3bears-bi, default) or `oi`
+  (3bears-order-intake), and read the rows from the run log or job summary. The key stays in GitHub
+  secrets; Postgres runs the query in a read-only transaction.
+- Every token, key and secret that exists is in the **Token Calendar** artifact
+  (https://claude.ai/artifact/3J5HHcDiKn8z5DDvYbuzdZ, collection `tokens`). Read it before asking about
+  any credential, reuse what exists, never ask Tim to create a new token.
+- Xentral: no session token. Order and customer facts come from the Supabase mirrors via the workflow.
+
 ## Language (DE/EN)
 - Every tool has a DE | EN switch in its header. German is the default on every visit and the choice is not
   remembered. Exception: Tim's login (tim.nichols@3bears.de) opens in English (Tim, 12.10.2026).
@@ -121,6 +161,8 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 
 ## Excel
 - Tim uses Excel for Mac with German settings: formulas use `;` separators. Never send Windows click paths.
+  Formulas read from SharePoint/Graph (or any export) show `,` separators whatever Tim's settings are: convert
+  every `,` argument separator to `;` before giving a formula to Tim. Never copy a formula from an export as-is.
   Best: point him to a working formula in the same workbook to copy and adapt.
 - Power Query on Mac cannot keep a Web/JSON source refreshing. Feed workbooks via OData or a file in
   SharePoint. Prefer Basic auth to a header written into the query.
