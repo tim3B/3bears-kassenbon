@@ -35,6 +35,10 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   render; simple tags only: `<p>`, `<b>`, `<ul>`/`<ol>`/`<li>`, `<br>`), so Tim can select all, copy and paste
   it into Teams with bold headers and bullet/numbered lists intact. Markdown in the chat loses them on paste
   (Tim, 23.10.2026).
+- A request outside the session's topic (e.g. a house-rule or memory change during an order-intake task) is
+  not done in the current session or on its branch. Start it as a separate session with its own branch and a
+  self-contained brief, tell Tim in one line where it runs, and carry on with the session's topic
+  (Tim, 23.10.2026).
 
 ## Change log (Tim, 20.10.2026)
 - tim3B/3bears-backlog `CHANGES.md` is the one change log for every system. **Read side:** before explaining any
