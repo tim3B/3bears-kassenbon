@@ -31,10 +31,9 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Handovers say the exact click path, order and expected result. Never hand Tim a decision tree to interpret.
 - Never suggest Slack (3Bears does not use it) or any tool not already in use unless Tim names it.
   There is no IT department: Tim is IT. Alerts belong inside the tool where the decision is made.
-- Teams messages Tim will send: give the final message as a rendered HTML page (SendUserFile, display
-  render; simple tags only: `<p>`, `<b>`, `<ul>`/`<ol>`/`<li>`, `<br>`), so Tim can select all, copy and paste
-  it into Teams with bold headers and bullet/numbered lists intact. Markdown in the chat loses them on paste
-  (Tim, 23.10.2026).
+- Teams messages Tim will send: write the final message directly in the chat reply as plain text with simple
+  formatting (bold headings, bullet or numbered lists), ready to copy. Never send it as a file: no Word (.docx),
+  no HTML, no SendUserFile (Tim, 26.10.2026: the HTML page showed as raw code and Word files are not wanted).
 - A request outside the session's topic (e.g. a house-rule or memory change during an order-intake task) is
   not done in the current session or on its branch. Start it as a separate session with its own branch and a
   self-contained brief, tell Tim in one line where it runs, and carry on with the session's topic
