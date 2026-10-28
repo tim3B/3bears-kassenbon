@@ -111,13 +111,15 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 | BI (ingest, shared data) | 3bears-bi | |
 | AI Hub | 3bears-ai-hub | |
 | Sales tool | 3bears-sales-tool | 3bears-sales-tool.netlify.app |
-| Ops tool | 3bears-planning-tool, 3bears-kassenbon, Xentral-Runrates-Export-Tool | 3b-planning.netlify.app, kassenbon-tool.netlify.app |
+| Ops tool | 3bears-planning-tool, Xentral-Runrates-Export-Tool | 3b-planning.netlify.app |
+| Social tool | repo to come (backlog #376). Its Kassenbon tab is Tim's own tool: 3bears-kassenbon today, Supabase `kassenbon-tool` (admins Tim and Linda) | kassenbon-tool.netlify.app |
 | Influencer tool | giftcard-run, plus a repo and Supabase outside tim3B (migration = backlog #71) | |
 | Tool ideas | 3bears-fulfilment and new ideas | |
 | Customer Success tool | idea only, no repo | |
 
 - Sessions: one sidebar folder per tool, named as the Tool column above (Cockpit, eCom tool, Order intake, Ops tool,
-  …). Claude cannot move a session into a folder; when a session is not in its tool's folder, say once which one.
+  Social tool, …). Claude cannot move a session into a folder; when a session is not in its tool's folder, say
+  once which one.
 - Browser-only steps (no API or connector: Pandectes, Shopify admin settings, GA4/GTM/KLAR admin screens) go to
   the browser worker as a `browser-task` issue in tim3B/3bears-backlog (see BROWSER_WORKER.md there). Never hand
   Tim instructions to paste into another chat (Tim, 20.10.2026).
