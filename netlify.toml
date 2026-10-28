@@ -1,4 +1,8 @@
 [build]
+  # Skip the build (exit 0) when a merge changes only markdown (house rules, CLAUDE.md, docs).
+  # 28.10.2026, backlog #364: 407 deploys = 6.105 Netlify credits this period; one house-rule
+  # copy redeployed every site. Any other file still builds.
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)*.md'"
   publish = "public"
   functions = "netlify/functions"
 
