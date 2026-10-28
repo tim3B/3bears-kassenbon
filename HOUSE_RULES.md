@@ -45,6 +45,9 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   sessions for the dates around the shift. Only then look for technical causes, and never propose asking an agency
   or vendor before this is done. **Write side:** any session that changes a live system, or whose recommendation is
   carried out (audits, checklists), adds a line the same day: date live, system, change, who decided, impact on figures.
+  The session adds its own line as part of finishing the change: never ask Tim and never just offer it. If
+  tim3B/3bears-backlog is not attached, attach it (add_repo, push access), add the line on a `claude/` branch, open a
+  PR and merge it (Tim, 28.10.2026).
 
 ## Verifying
 - **Facts only, triple-checked (Tim, 20.10.2026).** Never tell Tim a cause, fault, impact or "X is happening"
