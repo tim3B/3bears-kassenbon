@@ -58,6 +58,15 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   data shows it did. Anything Tim may forward to colleagues must hold this bar. If not yet confirmed, say
   "unconfirmed" and what check is missing, never present it as fact. (On 20.10.2026 a KLAR Influencer-rule
   "bug" went to Linda as fact before any data check.)
+- **Every figure is proven or labelled (Tim, 29.10.2026).** A figure given to Tim is either PROVEN (read in this
+  session from its source of record: the cockpit's own figure for anything the cockpit shows, DATEV/Supabase for
+  actuals) and named with that source, or labelled "Claude's estimate" with its method. Never present an own
+  estimate as a plan, outlook, target or cockpit figure. Where the data shows a range, give the range.
+- Before quoting a cockpit figure (Outlook, Plan, Forecast), read the exact value the cockpit shows; never rebuild
+  it from parts.
+- Before Tim sends a message to anyone, list each number in it with its source and status (proven / estimate);
+  fix or mark anything unproven first. (On 29.10.2026 an own extrapolation and an own assumption went into a
+  supplier message as the 2026 outlook and the 2027 plan.)
 - Verify by comparing, not by plausibility. State the authoritative figure and the new figure, row by row,
   and show they match. "Renders", "non-zero" or "looks about right" is not verified.
 - If the data to settle a question is reachable (Supabase, KLAR actuals, a backup), query it before
