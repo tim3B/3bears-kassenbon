@@ -10,11 +10,15 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - If Tim repeats a question, the last answer failed. Lead with the direct answer, then stop.
 - The first brief sets the scope. A goal Tim restates mid-task is a check on what you are building, not a
   new task. Do not widen the deliverable and do not tack on offers or caveats.
-- 20|10 (20m revenue, 10% EBITDA) is the strategy: the vision and goal. The plan built on it holds the actual
-  targets, which differ year by year. Never treat 20|10 as a plan target. Its horizon may move out to end
-  2028 (under review).
+- 20|10 (20m revenue, 10% EBITDA) is the strategy and a real goal: the business has to reach it by end 2027
+  or end 2028. It is not a plan target: each year's plan holds its own targets. Plans show the glide path
+  towards it: as revenue grows, profitability rises (hockey stick) until 20|10 is reached (Tim, 30.10.2026).
 - Build only what was asked. On a chart, the series Tim lists are the whole spec: no bands, markers or notes
   he did not ask for. Explain in the text, not on the plot. A chart he cannot read is a failed chart: fix it.
+- Text never carries data (Tim, 30.10.2026). Labels, headings, sentences and notes are fixed text that stays
+  true whatever the figures do; figures, names, rankings and periods go in their own fields (values, chips, table
+  cells, bars) next to a fixed label. No sentences assembled from data ("X and Y are where the money goes:
+  together € Z"), no values inside notes. Applies to every tool, export and report.
 - Simple beats complete: fewest inputs, no jargon on screen ("cost per new customer", not CAC), one visible
   sanity check instead of many badges. Prefer an app constant to a new DB column.
 - There is one forecast and one plan. Say "the forecast" or "the plan". Never write the retired case names
@@ -129,9 +133,10 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Sessions: one sidebar folder per tool, named as the Tool column above (Cockpit, eCom tool, Order intake, Ops tool,
   Social tool, …). Claude cannot move a session into a folder; when a session is not in its tool's folder, say
   once which one.
-- Browser-only steps (no API or connector: Pandectes, Shopify admin settings, GA4/GTM/KLAR admin screens) go to
-  the browser worker as a `browser-task` issue in tim3B/3bears-backlog (see BROWSER_WORKER.md there). Never hand
-  Tim instructions to paste into another chat (Tim, 20.10.2026).
+- Browser-only steps (no API or connector: Pandectes, Shopify admin settings, GA4/GTM/KLAR admin screens):
+  Claude does them itself in Tim's logged-in Chrome via Claude in Chrome (Tim, 30.10.2026; done this way for
+  Shopify policies 19.10 and 30.10). If Chrome isn't running, say so; never claim there is no access. Never
+  hand Tim instructions to paste into another chat (Tim, 20.10.2026).
 - Never ask Tim for a tool's URL. Sites are behind Microsoft sign-in, so a bare request gets a redirect to
   `/sign-in`; that is not a failure. `/api/health` shows a site is up.
 - Hosting: Netlify. Login: Microsoft 365 / Entra ID ("Sign in with Microsoft", @3bears.de only), never Google.
@@ -169,7 +174,8 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Every token, key and secret that exists is in the **Token Calendar** artifact
   (https://claude.ai/artifact/3J5HHcDiKn8z5DDvYbuzdZ, collection `tokens`). Read it before asking about
   any credential, reuse what exists, never ask Tim to create a new token.
-- Xentral: no session token. Order and customer facts come from the Supabase mirrors via the workflow.
+- Xentral: direct read-only access is allowed with the B2B PATs in `~/.config/3bears/xentral.env`
+  (XENTRAL_B2B_PAT; XENTRAL_B2B_SYNC_PAT for the payment sync) (Tim, 30.10.2026).
 
 ## Language (DE/EN)
 - Every tool has a DE | EN switch in its header. German is the default on every visit and the choice is not
