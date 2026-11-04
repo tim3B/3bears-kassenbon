@@ -45,6 +45,19 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Belen is on maternity leave: never name her as owner, author, approver or next step. Budgets are loaded
   by Tim as Excel uploads into the cockpit (eCom from the eCom tool's 2027 draft) (Tim, 28.10.2026).
 
+## Data states: Actual, Provisional, Expected, Forecast (Tim, 04.11.2026)
+- These four words have ONE meaning in every tool, every reply and every screen. Never redefine them, never
+  infer them from a code field name (`actual_eur` also carries provisional euros), never answer from memory:
+  - **Actual**: months with a BWA (DATEV closed). Booked, final.
+  - **Provisional**: in the PAST. From the day after the last BWA month to yesterday. Measured daily
+    (Minubo retail, KLAR eCom, Moss costs), not yet booked.
+  - **Forecast**: looks FORWARD, from today to 31 December. **Expected** is part of it: the next rolling 4 weeks.
+  - Today's month is split by day: its past days Provisional, the rest Expected/Forecast.
+  - A month that is over can never be Forecast. Outlook = Actual + Provisional + Expected + Forecast.
+- The cockpit's Terminology page (/terms) and its CLAUDE.md "THE OUTLOOK" are the source. In the cockpit code a
+  month's state comes only from `monthState` / `periodLegs`; a CI fence blocks "closed → actual, else forecast".
+  (On 04.11.2026 October showed as Forecast on every chart, and a session called October's figures "actuals".)
+
 ## Change log (Tim, 20.10.2026)
 - tim3B/3bears-backlog `CHANGES.md` is the one change log for every system. **Read side:** before explaining any
   shift in figures, check it, then search Microsoft 365 (Teams, Outlook, SharePoint/OneDrive) and Tim's other Claude
