@@ -146,10 +146,24 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Sessions: one sidebar folder per tool, named as the Tool column above (Cockpit, eCom tool, Order intake, Ops tool,
   Social tool, …). Claude cannot move a session into a folder; when a session is not in its tool's folder, say
   once which one.
-- Browser-only steps (no API or connector: Pandectes, Shopify admin settings, GA4/GTM/KLAR admin screens):
-  Claude does them itself in Tim's logged-in Chrome via Claude in Chrome (Tim, 30.10.2026; done this way for
-  Shopify policies 19.10 and 30.10). If Chrome isn't running, say so; never claim there is no access. Never
-  hand Tim instructions to paste into another chat (Tim, 20.10.2026).
+- One setup (Tim, 10.11.2026): code lives in the cloud so Tim can work from any device; no Remote Control (his
+  laptop is often off); no switching between chats or sessions.
+  - One cloud environment: "3Bears" (env_01AGfCi9eEMRDRbEvGDPcRpA), every tim3B repo attached. New cloud
+    sessions start there. A session that needs another repo attaches it itself (add_repo); never tell Tim it
+    is unreachable.
+  - Logged-in systems: use the first route that works.
+    (a) Connector in the session: Microsoft 365, KLAR, Minubo, Moss, Klaviyo, Canva (Monday once Tim has
+    authorised it in claude.ai → Settings → Connectors).
+    (b) API via GitHub Actions, keys in Actions secrets: e.g. the Shopify D2C app in 3bears-organic-seo
+    (scopes proven by the Access check run 31.10.2026), the cockpit's Run diagnostic workflow for Supabase.
+    (c) Public research: the session's own web search and headless browser. No laptop needed.
+    (d) Only screens with no API (Shopify admin settings such as the customer-accounts version, app admin
+    screens such as Loop and Pandectes, GA4/GTM/KLAR admin): a `browser-task` issue in tim3B/3bears-backlog,
+    done per its BROWSER_WORKER.md. The session reads the RESULT from the issue itself.
+  - Hard limit: Tim's logged-in Chrome runs on his laptop, so (d) only runs while the laptop is on. Keep it
+    the rare exception. Tim's only step: in the Claude in Chrome panel, say "Do the open browser tasks".
+  - Never send Tim to a second chat for anything (a) to (c) can do, and never hand him instructions to paste
+    into another chat (Tim, 20.10.2026).
 - Never ask Tim for a tool's URL. Sites are behind Microsoft sign-in, so a bare request gets a redirect to
   `/sign-in`; that is not a failure. `/api/health` shows a site is up.
 - Shopify: 3Bears is on Shopify Plus (Tim, 10.11.2026). Plus-only features (checkout extensibility, checkout
