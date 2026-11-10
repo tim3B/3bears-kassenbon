@@ -148,9 +148,6 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   once which one.
 - One setup (Tim, 10.11.2026): code lives in the cloud so Tim can work from any device; no Remote Control (his
   laptop is often off); no switching between chats or sessions.
-  - One cloud environment: "3Bears" (env_01AGfCi9eEMRDRbEvGDPcRpA), every tim3B repo attached. New cloud
-    sessions start there. A session that needs another repo attaches it itself (add_repo); never tell Tim it
-    is unreachable.
   - Logged-in systems: use the first route that works.
     (a) Connector in the session: Microsoft 365, KLAR, Minubo, Moss, Klaviyo, Canva (Monday once Tim has
     authorised it in claude.ai → Settings → Connectors).
