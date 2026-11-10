@@ -158,7 +158,9 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
     screens such as Loop and Pandectes, GA4/GTM/KLAR admin): a `browser-task` issue in tim3B/3bears-backlog,
     done per its BROWSER_WORKER.md. The session reads the RESULT from the issue itself.
   - Hard limit: Tim's logged-in Chrome runs on his laptop, so (d) only runs while the laptop is on. Keep it
-    the rare exception. Tim's only step: in the Claude in Chrome panel, say "Do the open browser tasks".
+    the rare exception. Tim's only step: in the Claude in Chrome panel, type `/` and pick the `browser-tasks`
+    shortcut (set up once, BROWSER_WORKER.md). A bare "Do the open browser tasks" does not work: the panel
+    only reads the open tab and never finds the queue (10.11.2026).
   - Never send Tim to a second chat for anything (a) to (c) can do, and never hand him instructions to paste
     into another chat (Tim, 20.10.2026).
 - Never ask Tim for a tool's URL. Sites are behind Microsoft sign-in, so a bare request gets a redirect to
