@@ -152,6 +152,8 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   hand Tim instructions to paste into another chat (Tim, 20.10.2026).
 - Never ask Tim for a tool's URL. Sites are behind Microsoft sign-in, so a bare request gets a redirect to
   `/sign-in`; that is not a failure. `/api/health` shows a site is up.
+- Shopify: 3Bears is on Shopify Plus (Tim, 10.11.2026). Plus-only features (checkout extensibility, checkout
+  upgrades, Shopify Flow) are available; never assume a non-Plus plan.
 - Hosting: Netlify. Login: Microsoft 365 / Entra ID ("Sign in with Microsoft", @3bears.de only), never Google.
   Data store: Supabase. No new external API without Tim's approval.
 - The AI Hub is the company register of tools and data: check it before building something a tool may already
