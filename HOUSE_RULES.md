@@ -134,6 +134,8 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Add follow-up tasks and bugs you find to tim3B/3bears-backlog directly; never ask Tim first. Make them
   fire-ready: outcome, what Claude will do, what will not change, size, risk and undo, what Tim gets back.
   Never re-list an old long-running topic unless it has a new, agreed approach. Never add `go` or `ship` labels.
+  Exception (Tim, 12.11.2026, backlog 644): a tool's admin may approve a fix that changes a figure inside their own
+  tool, in that tool's Ask panel; anything touching the BI data feed or data between tools still needs Tim.
 - Models: Sonnet for light work, Opus for figures and logic. Fable only when Tim says so for that task.
 
 ## Tools and estate
@@ -166,8 +168,9 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
     screens such as Loop and Pandectes, GA4/GTM/KLAR admin): a `browser-task` issue in tim3B/3bears-backlog,
     done per its BROWSER_WORKER.md. The session reads the RESULT from the issue itself.
   - Hard limit: Tim's logged-in Chrome runs on his laptop, so (d) only runs while the laptop is on. Keep it
-    the rare exception. Tim's only step: in the Claude in Chrome panel, paste the start message from
-    BROWSER_WORKER.md. A bare "Do the open browser tasks" does not work: the panel
+    the rare exception. Tim's only step: in the Claude in Chrome panel, paste the start message the session gives him.
+    It names only that session's own issue(s), never the whole queue (Tim runs several sessions at once), and carries
+    his approval for the changes in it; write the job so the worker never has to ask him again (16.11.2026). A bare "Do the open browser tasks" does not work: the panel
     only reads the open tab and never finds the queue (10.11.2026).
   - Never send Tim to a second chat for anything (a) to (c) can do, and never hand him instructions to paste
     into another chat (Tim, 20.10.2026).
@@ -185,6 +188,11 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   mirrored from its owning system (Xentral, DATEV), never authored in Supabase. Facts are append-only.
 - Product units, revenue and margin come only from the views `v_product_units_daily` / `_weekly` / `_monthly`
   and `v_ecom_product_margin_daily`. No tool loads raw KLAR or Minubo product exports. KLAR = eCom, Minubo = retail.
+- One CM structure for every tool (Tim, 18.11.2026): the cockpit's CM view (CM Master) is the definition.
+  CM1 = net revenue + other operating income − total COGS (product costs + inventory changes);
+  CM2 = CM1 − logistics − transaction costs; CM3 = CM2 − marketing − commissions. No tool defines its own CM steps
+  or line names; per-product figures follow these steps, and costs that exist only per channel are shown as
+  allocated, never as measured.
 - Ingest: the only manual step is someone dropping an export into its OneDrive folder. GitHub Actions does the rest.
 - Never gate work on the clock (scheduled runs arrive late or not at all). Gate on how old the data is.
 - An unbounded Supabase select returns at most 1,000 rows with no error. Page every read whose size depends
