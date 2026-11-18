@@ -44,6 +44,7 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   (Tim, 23.10.2026).
 - Belen is on maternity leave: never name her as owner, author, approver or next step. Budgets are loaded
   by Tim as Excel uploads into the cockpit (eCom from the eCom tool's 2027 draft) (Tim, 28.10.2026).
+- Shared documents (Claude Docs, Google Docs, Word/SharePoint, plan artifacts): gather every change first, then write them in ONE update call per document. Never one call per change, never a call per row; each call can raise an approval prompt for Tim. Fix a refused call before resending, so a bad op does not cost a second prompt (Tim, 18.11.2026).
 
 ## Data states: Actual, Provisional, Expected, Forecast (Tim, 04.11.2026; Actual = DATEV only, 11.11.2026)
 - These four words have ONE meaning in every tool, every reply and every screen. Never redefine them, never
