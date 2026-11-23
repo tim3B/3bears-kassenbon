@@ -138,6 +138,7 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
   Never re-list an old long-running topic unless it has a new, agreed approach. Never add `go` or `ship` labels.
   Exception (Tim, 12.11.2026, backlog 644): a tool's admin may approve a fix that changes a figure inside their own
   tool, in that tool's Ask panel; anything touching the BI data feed or data between tools still needs Tim.
+  Bug fix (Tim, 23.11.2026): A fix that makes the tool apply a rule it already has where it failed to (no new rule, no change to how a figure, price, quantity or match is defined) is a bug fix: `hands-off`, put live without approval. A new rule, a changed definition, or anything touching the BI feed or another tool still goes to the approver.
 - Models: Sonnet for light work, Opus for figures and logic. Fable only when Tim says so for that task.
 
 ## Tools and estate
