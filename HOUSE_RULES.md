@@ -199,6 +199,10 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Never gate work on the clock (scheduled runs arrive late or not at all). Gate on how old the data is.
 - An unbounded Supabase select returns at most 1,000 rows with no error. Page every read whose size depends
   on the data, with a stable ORDER BY, including throwaway check scripts.
+- Supabase egress is a budget (Tim, 23.11.2026). Sum or filter in the database and read only the result; never
+  download raw rows to sum them in code. Repeated reads use a cache keyed so each row is downloaded once.
+  No test, check or script reads production on every push: live tests run on manual dispatch only.
+  Every new data connection or tool read is checked against the cockpit's daily egress check after it goes live.
 - Claude applies every database change itself. Never hand Tim SQL to paste (Tim, 09.10.2026).
   The 3bears-bi Supabase project (cockpit, eCom and BI data): add `db/NNN_*.sql` plus its checks file to the
   cockpit or eCom repo and merge; the apply-migrations workflow applies it. After each merge, check the
