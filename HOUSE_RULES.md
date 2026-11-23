@@ -38,6 +38,7 @@ change it in tim3B/3bears-backlog first, then copy it. The repo's own CLAUDE.md 
 - Teams messages Tim will send: write the final message directly in the chat reply as plain text with simple
   formatting (bold headings, bullet or numbered lists), ready to copy. Never send it as a file: no Word (.docx),
   no HTML, no SendUserFile (Tim, 26.10.2026: the HTML page showed as raw code and Word files are not wanted).
+  Write them in English unless Tim asks for German (Tim, 23.11.2026).
 - A request outside the session's topic (e.g. a house-rule or memory change during an order-intake task) is
   not done in the current session or on its branch. Start it as a separate session with its own branch and a
   self-contained brief, tell Tim in one line where it runs, and carry on with the session's topic
