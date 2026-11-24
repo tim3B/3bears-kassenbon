@@ -2,7 +2,12 @@
   # Skip the build (exit 0) when a merge changes only markdown (house rules, CLAUDE.md, docs).
   # 28.10.2026, backlog #364: 407 deploys = 6.105 Netlify credits this period; one house-rule
   # copy redeployed every site. Any other file still builds.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)*.md'"
+  # 24.11.2026 fix: the old rule only compared CACHED_COMMIT_REF..COMMIT_REF. Netlify sets
+  # CACHED_COMMIT_REF to the last cached build, which can be the PR's deploy preview (same tree
+  # as the squash merge) or equal COMMIT_REF (no cache) -> real code merges were cancelled.
+  # Now: build when the refs are missing/equal, when this commit itself (HEAD^..HEAD) or the
+  # range since the cached build touches anything but the excluded paths, or when git errors.
+  ignore = '''test -n "$CACHED_COMMIT_REF" && test "$CACHED_COMMIT_REF" != "$COMMIT_REF" && git diff --quiet HEAD^ HEAD -- . ':(exclude)*.md' && git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)*.md''''
   publish = "public"
   functions = "netlify/functions"
 
